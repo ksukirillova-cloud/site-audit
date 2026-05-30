@@ -286,7 +286,9 @@ export default function SiteAudit() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ html, url: u }),
       });
-      if (aiRes.ok) setMktData(await aiRes.json());
+      const aiJson = await aiRes.json();
+console.log('AI response:', aiRes.status, aiJson);
+if (aiRes.ok) setMktData(aiJson);
 
     } catch (e) {
       setError("Не удалось проанализировать. Проверьте URL и попробуйте снова.");
