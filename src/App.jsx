@@ -308,7 +308,7 @@ export default function App() {
       <section style={{ position: "relative", zIndex: 1, padding: "64px 24px 48px", maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
         <div className="fu" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: T.white, border: `1px solid ${T.border}`, borderRadius: 20, padding: "6px 14px", marginBottom: 24, fontSize: 11, fontWeight: 700, color: T.gray, letterSpacing: "0.1em", textTransform: "uppercase", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4CAF50", boxShadow: "0 0 6px #4CAF50", animation: "pulse 2s infinite" }} />
-          Бесплатный AI-аудит сайта
+          Бесплатный аудит сайта
         </div>
 
         <h1 className="fu1" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 900, lineHeight: 1.03, letterSpacing: "-0.04em", marginBottom: 10, color: T.black }}>
