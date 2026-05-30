@@ -196,10 +196,9 @@ async function fetchPageSpeed(url, strategy = "mobile") {
   const catParams = cats.map(c => `category=${c}`).join("&");
   const endpoint = `${base}?url=${encodeURIComponent(url)}&strategy=${strategy}&key=${PAGESPEED_API_KEY}&${catParams}`;
   const res = await fetch(endpoint);
-  if (!res.ok) throw new Error("PageSpeed error");
+  if (!res.ok) throw new Error("PageSpeed API error");
   return res.json();
 }
-
 function parseTech(mob, desk) {
   const lhr = mob.lighthouseResult;
   const cats = lhr.categories;
