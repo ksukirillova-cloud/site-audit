@@ -191,7 +191,13 @@ function CheckItem({ label, ok, tip }) {
 }
 
 async function fetchPageSpeed(url, strategy = "mobile") {
-  const res = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&key=${PAGESPEED_API_KEY}`);
+  const params = new URLSearchParams({
+    url,
+    strategy,
+    key: PAGESPEED_API_KEY,
+    category: ["performance", "seo", "accessibility", "best-practices"],
+  });
+  const res = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?${params}`);
   if (!res.ok) throw new Error("PageSpeed error");
   return res.json();
 }
@@ -215,21 +221,21 @@ function parseTech(mob, desk) {
     si: a["speed-index"]?.displayValue || "—",
     url: lhr.finalUrl,
     seoItems: [
-      { label: "Title страницы", ok: a["document-title"]?.score === 1, tip: "Добавьте <title> в <head> — 50-60 символов." },
-      { label: "Мета-описание", ok: a["meta-description"]?.score === 1, tip: "Добавьте <meta name='description' content='...'> — 150-160 символов." },
-      { label: "Canonical URL", ok: a["canonical"]?.score === 1, tip: "Добавьте <link rel='canonical' href='https://yoursite.com/page'>." },
-      { label: "Robots.txt", ok: a["robots-txt"]?.score === 1, tip: "Создайте robots.txt: User-agent: * / Allow: /" },
-      { label: "Alt-теги у изображений", ok: a["image-alt"]?.score === 1, tip: "Добавьте alt='описание' к каждому <img>." },
-      { label: "Тексты ссылок", ok: a["link-text"]?.score === 1, tip: "Замените 'нажмите здесь' на конкретные описания." },
-      { label: "HTTPS", ok: a["is-on-https"]?.score === 1, tip: "SSL-сертификат — бесплатно через Let's Encrypt." },
-      { label: "HTTP → HTTPS редирект", ok: a["redirects-http"]?.score === 1, tip: "301-редирект в .htaccess или настройках сервера." },
-      { label: "Viewport мобильных", ok: a["viewport"]?.score === 1, tip: "<meta name='viewport' content='width=device-width, initial-scale=1'>" },
-      { label: "Размер кнопок на мобильном", ok: a["tap-targets"]?.score === 1, tip: "Кнопки минимум 48×48px." },
+      { label: "Title страницы", ok: a["document-title"]?.score !== 0 && a["document-title"]?.score != null, tip: "Добавьте <title> в <head> — 50-60 символов." },
+      { label: "Мета-описание", ok: a["meta-description"]?.score !== 0 && a["meta-description"]?.score != null, tip: "Добавьте <meta name='description' content='...'> — 150-160 символов." },
+      { label: "Canonical URL", ok: a["canonical"]?.score !== 0 && a["canonical"]?.score != null, tip: "Добавьте <link rel='canonical' href='https://yoursite.com/page'>." },
+      { label: "Robots.txt", ok: a["robots-txt"]?.score !== 0 && a["robots-txt"]?.score != null, tip: "Создайте robots.txt: User-agent: * / Allow: /" },
+      { label: "Alt-теги у изображений", ok: a["image-alt"]?.score !== 0 && a["image-alt"]?.score != null, tip: "Добавьте alt='описание' к каждому <img>." },
+      { label: "Тексты ссылок", ok: a["link-text"]?.score !== 0 && a["link-text"]?.score != null, tip: "Замените 'нажмите здесь' на конкретные описания." },
+      { label: "HTTPS", ok: a["is-on-https"]?.score !== 0 && a["is-on-https"]?.score != null, tip: "SSL-сертификат — бесплатно через Let's Encrypt." },
+      { label: "HTTP → HTTPS редирект", ok: a["redirects-http"]?.score !== 0 && a["redirects-http"]?.score != null, tip: "301-редирект в .htaccess или настройках сервера." },
+      { label: "Viewport мобильных", ok: a["viewport"]?.score !== 0 && a["viewport"]?.score != null, tip: "<meta name='viewport' content='width=device-width, initial-scale=1'>" },
+      { label: "Размер кнопок на мобильном", ok: a["tap-targets"]?.score !== 0 && a["tap-targets"]?.score != null, tip: "Кнопки минимум 48×48px." },
     ],
     geoItems: [
       { label: "Open Graph теги", ok: false, tip: "og:title, og:description, og:image для превью в соцсетях." },
       { label: "Schema.org разметка", ok: false, tip: "JSON-LD: Organization или LocalBusiness в <head>." },
-      { label: "Hreflang", ok: a["hreflang"]?.score === 1, tip: "Для мультиязычных: <link rel='alternate' hreflang='ru'>." },
+      { label: "Hreflang", ok: a["hreflang"]?.score !== 0 && a["hreflang"]?.score != null, tip: "Для мультиязычных: <link rel='alternate' hreflang='ru'>." },
       { label: "Sitemap.xml", ok: false, tip: "Создайте и зарегистрируйте в Google Search Console." },
       { label: "Структурированные данные", ok: false, tip: "JSON-LD с данными о бизнесе помогает AI-поисковикам." },
     ],
@@ -308,7 +314,7 @@ export default function App() {
       <section style={{ position: "relative", zIndex: 1, padding: "64px 24px 48px", maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
         <div className="fu" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: T.white, border: `1px solid ${T.border}`, borderRadius: 20, padding: "6px 14px", marginBottom: 24, fontSize: 11, fontWeight: 700, color: T.gray, letterSpacing: "0.1em", textTransform: "uppercase", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4CAF50", boxShadow: "0 0 6px #4CAF50", animation: "pulse 2s infinite" }} />
-          Бесплатный аудит сайта
+          Бесплатный AI-аудит сайта
         </div>
 
         <h1 className="fu1" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 900, lineHeight: 1.03, letterSpacing: "-0.04em", marginBottom: 10, color: T.black }}>
@@ -325,7 +331,7 @@ export default function App() {
         </h1>
 
         <p className="fu2" style={{ fontSize: 15, color: T.gray, lineHeight: 1.7, marginBottom: 36, maxWidth: 440, margin: "0 auto 36px" }}>
-          Маркетинг, SEO, GEO и технический аудит —<br />узнайте, где вы теряете клиентов
+          Маркетинг, SEO, GEO и технический аудит —<br />узнайте где вы теряете клиентов
         </p>
 
         <div className="fu2" style={{
