@@ -196,9 +196,10 @@ async function fetchPageSpeed(url, strategy = "mobile") {
   const catParams = cats.map(c => `category=${c}`).join("&");
   const endpoint = `${base}?url=${encodeURIComponent(url)}&strategy=${strategy}&key=${PAGESPEED_API_KEY}&${catParams}`;
   const res = await fetch(endpoint);
-  if (!res.ok) throw new Error("PageSpeed API error");
+  if (!res.ok) throw new Error("PageSpeed error");
   return res.json();
 }
+
 function parseTech(mob, desk) {
   const lhr = mob.lighthouseResult;
   const cats = lhr.categories;
@@ -432,36 +433,37 @@ export default function App() {
                     </div>
                   )}
                   {sections.length > 0 && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10, alignItems: "start" }}>
-                      {sections.map((s, i) => {
-                        const isLocked = i >= 3;
-                        return (
-                          <div key={s.title} style={{ position: "relative" }}>
-                            <div style={{ filter: isLocked ? "blur(4px)" : "none", pointerEvents: isLocked ? "none" : "auto", userSelect: isLocked ? "none" : "auto" }}>
-                              <AccordionCard icon={icons[i]} {...s} delay={i * 60} />
-                            </div>
-                            {isLocked && (
-                              <div style={{
-                                position: "absolute", inset: 0,
-                                background: "rgba(240,237,230,0.75)",
-                                backdropFilter: "blur(6px)",
-                                borderRadius: 16,
-                                display: "flex", flexDirection: "column",
-                                alignItems: "center", justifyContent: "center",
-                                gap: 10, padding: 20, textAlign: "center",
-                              }}>
-                                <span style={{ fontSize: 24 }}>🔒</span>
-                                <p style={{ fontSize: 13, fontWeight: 700, color: "#111", margin: 0 }}>Полный анализ — в маркетинг-разборе</p>
-                                <p style={{ fontSize: 12, color: "#666", margin: 0 }}>Разберу лично: оффер, структуру, доверие</p>
-                                <a href="https://t.me/ksukirillova" style={{ background: "#1B63FF", color: "#fff", borderRadius: 10, padding: "8px 16px", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
-                                  Маркетинг-разбор за 3 500 ₽ →
-                                </a>
-                              </div>
-                            )}
+                    <>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10, alignItems: "start" }}>
+                        {sections.slice(0, 2).map((s, i) => (
+                          <AccordionCard key={s.title} icon={icons[i]} {...s} delay={i * 60} />
+                        ))}
+                      </div>
+                      {sections.length > 2 && (
+                        <div style={{ position: "relative", marginTop: 10 }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10, alignItems: "start", filter: "blur(5px)", pointerEvents: "none", userSelect: "none" }}>
+                            {sections.slice(2).map((s, i) => (
+                              <AccordionCard key={s.title} icon={icons[i + 2]} {...s} delay={0} />
+                            ))}
                           </div>
-                        );
-                      })}
-                    </div>
+                          <div style={{
+                            position: "absolute", inset: 0,
+                            background: "rgba(240,237,230,0.6)",
+                            borderRadius: 16,
+                            display: "flex", flexDirection: "column",
+                            alignItems: "center", justifyContent: "center",
+                            gap: 12, padding: 24, textAlign: "center",
+                          }}>
+                            <span style={{ fontSize: 32 }}>🔒</span>
+                            <p style={{ fontSize: 15, fontWeight: 800, color: "#111", margin: 0 }}>Полный маркетинговый анализ</p>
+                            <p style={{ fontSize: 13, color: "#555", margin: 0, maxWidth: 320 }}>Ещё 4 блока: УТП, доверие, структура, мобильный UX — только в маркетинг-разборе</p>
+                            <a href="https://t.me/ksukirillova" style={{ background: "#1B63FF", color: "#fff", borderRadius: 12, padding: "12px 24px", fontSize: 14, fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 16px rgba(27,99,255,0.3)" }}>
+                              Маркетинг-разбор за 3 500 ₽ →
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                   {mkt?.quick_wins?.length > 0 && (
                     <div style={{ background: "#F1F8F1", border: "1px solid #C8E6C9", borderRadius: 12, padding: "14px 18px", marginTop: 10 }}>
