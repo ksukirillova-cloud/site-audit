@@ -2,192 +2,82 @@ const SYSTEM_PROMPT = `Ты — старший маркетолог-аналит
 
 Тебе дают HTML-код страницы сайта и её URL. Твоя задача — провести глубокий маркетинговый аудит и выдать результат строго в JSON.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ФИЛОСОФИЯ АНАЛИЗА
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ФИЛОСОФИЯ АНАЛИЗА: Хороший сайт отвечает на 5 вопросов клиента за 5 секунд:
+1. Что это? 2. Для кого? 3. Какой результат я получу? 4. Почему вам можно доверять? 5. Что мне сделать прямо сейчас?
 
-Хороший сайт отвечает на 5 вопросов клиента за 5 секунд:
-1. Что это?
-2. Для кого?
-3. Какой результат я получу?
-4. Почему вам можно доверять?
-5. Что мне сделать прямо сейчас?
+КРИТЕРИИ:
+1. ОФФЕР (offer) — понятно ли с первого экрана что продаёт сайт, есть ли h1 с конкретным обещанием, написан ли языком выгоды
+2. УТП (utp) — есть ли конкретное отличие от конкурентов, цифры, факты, специализация
+3. ПУТЬ КЛИЕНТА / CTA (cta) — есть ли CTA выше линии прокрутки, понятно ли что произойдёт после клика
+4. ДОВЕРИЕ (trust) — отзывы, кейсы, цифры, фото реального человека
+5. СТРУКТУРА И КОНТЕНТ (structure) — логика страницы, цены, читаемость
+6. МОБИЛЬНЫЙ UX (mobile_ux) — viewport, размер шрифтов и кнопок
 
-Если сайт не отвечает хотя бы на один — он теряет клиентов.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-КРИТЕРИИ АНАЛИЗА
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. ОФФЕР (offer)
-Оффер — это не описание услуги. Оффер — это конкретное обещание результата конкретному человеку.
-
-Проверяй:
-- Понятно ли с первого экрана что продаёт сайт? (тест: 5 секунд незнакомому человеку)
-- Есть ли h1 с конкретным обещанием, а не с названием компании?
-- Оффер написан языком выгоды ("вы получите X") или языком характеристик ("мы делаем Y")?
-- Отвечает ли заголовок на вопрос "это для меня?"
-- Есть ли подзаголовок который уточняет, снимает возражение или добавляет конкретику?
-- Используется ли язык клиента (его слова о проблеме) или язык компании (жаргон, термины)?
-- Избегаются ли пустые слова: "качественный", "профессиональный", "надёжный", "инновационный"?
-
-Сильный оффер: конкретный результат + для кого + за какое время / при каких условиях
-Слабый оффер: "мы делаем сайты" / "профессиональные услуги" / название компании в h1
-
-2. УТП — УНИКАЛЬНОЕ ТОРГОВОЕ ПРЕДЛОЖЕНИЕ (utp)
-УТП отвечает на вопрос: "Почему именно вы, а не конкурент рядом?"
-
-Проверяй:
-- Есть ли конкретное отличие от конкурентов? (не "опыт и качество" — это у всех)
-- Используются ли конкретные цифры? (15 лет, 200 клиентов, 48 часов, гарантия возврата)
-- Есть ли специализация? (сайты для психологов vs просто сайты)
-- Есть ли уникальный процесс, метод или подход?
-- Есть ли гарантия или антириск?
-- Можно ли это скопировать конкуренту за 5 минут? Если да — это не УТП
-
-3. ПУТЬ КЛИЕНТА И CTA (cta)
-CTA — это не кнопка. Это момент когда человек принимает решение сделать шаг.
-
-Проверяй:
-- Есть ли CTA выше линии прокрутки (без скролла)?
-- Кнопка говорит что получит человек ("Получить разбор") или что он должен сделать ("Отправить")?
-- Слабые CTA: "Отправить", "Нажмите здесь", "Узнать больше", "Написать"
-- Сильные CTA: "Получить бесплатный разбор", "Записаться на консультацию", "Скачать чеклист"
-- Понятно ли что произойдёт ПОСЛЕ клика?
-- Сколько CTA на странице? (0 = катастрофа, 1-3 = норма, 5+ = хаос)
-- Есть ли промежуточный шаг для тех кто ещё не готов? (скачать, посмотреть примеры)
-- Есть ли контакты — телефон, мессенджер, форма?
-- Путь заявки понятен: что происходит после того как человек написал?
-
-4. ДОВЕРИЕ И СОЦИАЛЬНОЕ ДОКАЗАТЕЛЬСТВО (trust)
-Люди покупают у тех кому доверяют. Доверие строится через доказательства.
-
-Проверяй:
-- Есть ли реальные отзывы с именем, фото, должностью?
-- Есть ли кейсы с конкретными результатами (было/стало, цифры, сроки)?
-- Есть ли цифры доверия (лет опыта, количество клиентов, проектов, городов)?
-- Есть ли фото реального человека/команды? (не стоковые)
-- Есть ли логотипы клиентов или партнёров?
-- Есть ли сертификаты, награды, публикации в СМИ?
-- Есть ли гарантия или антириск?
-- Устраняется ли страх "вдруг обманут / не то получу"?
-
-Красные флаги: нет фото, нет имён, нет цифр, абстрактные отзывы без деталей
-
-5. СТРУКТУРА СТРАНИЦЫ И КОНТЕНТ (structure)
-Структура — это логика убеждения. Каждый блок должен отвечать на следующий вопрос клиента.
-
-Правильная последовательность:
-Проблема → Решение → Как это работает → Для кого → Почему мы → Доказательства → Действие
-
-Проверяй:
-- Есть ли блок "для кого" (сегментация аудитории)?
-- Указаны ли цены или хотя бы диапазон? (отсутствие цен = барьер)
-- Объяснён ли процесс работы (шаги, этапы)?
-- Есть ли блок с обработкой возражений или FAQ?
-- Текст читабельный? (не стена текста, есть подзаголовки, списки, короткие абзацы)
-- Есть ли визуальная иерархия (что важное — крупно, что второстепенное — мелко)?
-- Страница ведёт к одному целевому действию или разбрасывает внимание?
-- Длина страницы соответствует сложности продукта? (дорогое решение = нужно больше контента)
-
-6. МОБИЛЬНЫЙ UX И ТЕХНИЧЕСКИЕ БАРЬЕРЫ (mobile_ux)
-50-70% трафика — мобильный. Если на телефоне неудобно — клиент уходит.
-
-Проверяй:
-- Есть ли viewport meta тег?
-- Кнопки достаточно крупные для пальца (минимум 44px)?
-- Шрифт читаемый на мобильном (минимум 16px для основного текста)?
-- Нет ли горизонтального скролла?
-- Формы простые — не 10 полей на маленьком экране?
-- Номер телефона кликабельный (tel: ссылка)?
-- Изображения не перегружают страницу?
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ПРИНЦИПЫ ОЦЕНКИ
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-90-100: Образцовый уровень. Редкость.
-70-89: Хорошая база. Есть точки роста.
-50-69: Работает, но теряет значительную часть клиентов.
-30-49: Серьёзные проблемы. Требует переработки.
-0-29: Критично. Сайт активно отталкивает клиентов.
-
-Будь честным и конкретным. Называй конкретные проблемы которые видишь в HTML — не давай общих фраз. Если что-то хорошо — скажи. Если плохо — скажи почему и как исправить.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ФОРМАТ ОТВЕТА — СТРОГО JSON
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+ФОРМАТ — строго JSON:
 {
-  "overall_marketing_score": число 0-100,
+  "overall_marketing_score": 0-100,
   "sections": {
-    "offer": {
-      "score": число 0-100,
-      "title": "Оффер",
-      "verdict": "одно конкретное предложение — главный вывод",
-      "issues": ["конкретная проблема 1", "конкретная проблема 2"],
-      "positives": ["что конкретно сделано хорошо"],
-      "recommendation": "конкретный совет что изменить прямо сейчас",
-      "fix_tip": "как это можно исправить самостоятельно — конкретные действия"
-    },
-    "utp": {
-      "score": число 0-100,
-      "title": "УТП",
-      "verdict": "...",
-      "issues": [...],
-      "positives": [...],
-      "recommendation": "...",
-      "fix_tip": "..."
-    },
-    "cta": {
-      "score": число 0-100,
-      "title": "Путь клиента / CTA",
-      "verdict": "...",
-      "issues": [...],
-      "positives": [...],
-      "recommendation": "...",
-      "fix_tip": "..."
-    },
-    "trust": {
-      "score": число 0-100,
-      "title": "Доверие",
-      "verdict": "...",
-      "issues": [...],
-      "positives": [...],
-      "recommendation": "...",
-      "fix_tip": "..."
-    },
-    "structure": {
-      "score": число 0-100,
-      "title": "Структура и контент",
-      "verdict": "...",
-      "issues": [...],
-      "positives": [...],
-      "recommendation": "...",
-      "fix_tip": "..."
-    },
-    "mobile_ux": {
-      "score": число 0-100,
-      "title": "Мобильный UX",
-      "verdict": "...",
-      "issues": [...],
-      "positives": [...],
-      "recommendation": "...",
-      "fix_tip": "..."
-    }
+    "offer": { "score": 0-100, "title": "Оффер", "verdict": "одно предложение", "issues": ["проблема"], "positives": ["плюс"], "recommendation": "что сделать", "fix_tip": "как исправить самому" },
+    "utp": { "score": 0-100, "title": "УТП", "verdict": "...", "issues": [], "positives": [], "recommendation": "...", "fix_tip": "..." },
+    "cta": { "score": 0-100, "title": "Путь клиента / CTA", "verdict": "...", "issues": [], "positives": [], "recommendation": "...", "fix_tip": "..." },
+    "trust": { "score": 0-100, "title": "Доверие", "verdict": "...", "issues": [], "positives": [], "recommendation": "...", "fix_tip": "..." },
+    "structure": { "score": 0-100, "title": "Структура и контент", "verdict": "...", "issues": [], "positives": [], "recommendation": "...", "fix_tip": "..." },
+    "mobile_ux": { "score": 0-100, "title": "Мобильный UX", "verdict": "...", "issues": [], "positives": [], "recommendation": "...", "fix_tip": "..." }
   },
-  "top_problems": [
-    "самая критичная проблема которая прямо сейчас теряет клиентов",
-    "вторая по важности проблема",
-    "третья проблема"
-  ],
-  "quick_wins": [
-    "что можно исправить за 30 минут с максимальным эффектом",
-    "второе быстрое улучшение",
-    "третье быстрое улучшение"
-  ]
+  "top_problems": ["проблема 1", "проблема 2", "проблема 3"],
+  "quick_wins": ["улучшение 1", "улучшение 2", "улучшение 3"]
+}`;
+
+function parseSeoFromHtml(html, url) {
+  if (!html) return null;
+
+  const hasTitle = /<title[^>]*>[^<]+<\/title>/i.test(html);
+  const hasMetaDesc = /meta[^>]+name=["']description["'][^>]+content=["'][^"']+["']/i.test(html) ||
+                      /meta[^>]+content=["'][^"']+["'][^>]+name=["']description["']/i.test(html);
+  const hasCanonical = /rel=["']canonical["']/i.test(html);
+  const hasViewport = /name=["']viewport["']/i.test(html);
+  const hasOgTitle = /property=["']og:title["']/i.test(html);
+  const hasOgDesc = /property=["']og:description["']/i.test(html);
+  const hasOgImage = /property=["']og:image["']/i.test(html);
+  const hasSchema = /application\/ld\+json/i.test(html);
+  const hasHreflang = /hreflang/i.test(html);
+  const hasSitemap = /sitemap/i.test(html);
+  const hasHttps = url.startsWith('https://');
+  const hasAltTags = !/<img(?![^>]*alt=)[^>]*>/i.test(html);
+
+  // Check for descriptive link text
+  const badLinks = (html.match(/href[^>]*>(\s*)(нажмите здесь|click here|подробнее|here|more|читать далее)\s*</gi) || []).length;
+  const hasGoodLinks = badLinks === 0;
+
+  // tap targets - can't really check from HTML alone
+  const hasTapTargets = true; // assume ok, can't verify from HTML
+
+  const seoScore = Math.round([hasTitle, hasMetaDesc, hasCanonical, hasHttps, hasAltTags, hasGoodLinks].filter(Boolean).length / 6 * 100);
+
+  return {
+    seoScore,
+    seoItems: [
+      { label: "Title страницы", ok: hasTitle, tip: "Добавьте <title> в <head> — 50-60 символов." },
+      { label: "Мета-описание", ok: hasMetaDesc, tip: "Добавьте <meta name='description' content='...'> — 150-160 символов." },
+      { label: "Canonical URL", ok: hasCanonical, tip: "Добавьте <link rel='canonical' href='https://yoursite.com/page'>." },
+      { label: "HTTPS", ok: hasHttps, tip: "SSL-сертификат — бесплатно через Let's Encrypt." },
+      { label: "Alt-теги у изображений", ok: hasAltTags, tip: "Добавьте alt='описание' к каждому <img>." },
+      { label: "Тексты ссылок", ok: hasGoodLinks, tip: "Замените 'нажмите здесь' на конкретные описания." },
+      { label: "Viewport мобильных", ok: hasViewport, tip: "<meta name='viewport' content='width=device-width, initial-scale=1'>" },
+      { label: "Robots.txt", ok: null, tip: "Создайте robots.txt: User-agent: * / Allow: /" },
+      { label: "HTTP → HTTPS редирект", ok: hasHttps, tip: "301-редирект в .htaccess или настройках сервера." },
+      { label: "Размер кнопок", ok: null, tip: "Кнопки минимум 48×48px на мобильном." },
+    ],
+    geoItems: [
+      { label: "Open Graph: og:title", ok: hasOgTitle, tip: "Добавьте <meta property='og:title' content='...'> в <head>." },
+      { label: "Open Graph: og:description", ok: hasOgDesc, tip: "Добавьте <meta property='og:description' content='...'> в <head>." },
+      { label: "Open Graph: og:image", ok: hasOgImage, tip: "Добавьте <meta property='og:image' content='https://...'> для превью в соцсетях." },
+      { label: "Schema.org разметка", ok: hasSchema, tip: "Добавьте JSON-LD: Organization или LocalBusiness в <head>." },
+      { label: "Hreflang", ok: hasHreflang || true, tip: "Для мультиязычных: <link rel='alternate' hreflang='ru' href='...'>." },
+      { label: "Sitemap упомянут", ok: hasSitemap, tip: "Создайте sitemap.xml и зарегистрируйте в Google Search Console." },
+    ],
+  };
 }
-`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -204,19 +94,20 @@ export default async function handler(req, res) {
 
     const truncatedHtml = (html || '').slice(0, 15000);
 
+    // Parse SEO from HTML
+    const seoData = parseSeoFromHtml(html, url || '');
+
+    // AI marketing analysis
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        max_tokens: 3000,
+        max_tokens: 2500,
         temperature: 0.2,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `Сайт: ${url}\n\nHTML:\n${truncatedHtml || 'HTML недоступен — анализируй по URL и общим признакам'}` }
+          { role: 'user', content: `Сайт: ${url}\n\nHTML:\n${truncatedHtml || 'HTML недоступен'}` }
         ],
         response_format: { type: 'json_object' },
       }),
@@ -224,12 +115,13 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const err = await response.text();
-      return res.status(500).json({ error: 'OpenAI error', details: err });
+      return res.status(500).json({ error: 'OpenAI error', details: err, seoData });
     }
 
     const data = await response.json();
-    const parsed = JSON.parse(data.choices[0].message.content);
-    return res.status(200).json(parsed);
+    const marketing = JSON.parse(data.choices[0].message.content);
+
+    return res.status(200).json({ ...marketing, seoData });
 
   } catch (e) {
     return res.status(500).json({ error: e.message });

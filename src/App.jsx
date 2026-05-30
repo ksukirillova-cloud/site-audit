@@ -246,6 +246,7 @@ export default function App() {
   const [tech, setTech] = useState(null);
   const [mkt, setMkt] = useState(null);
   const [mktLoading, setMktLoading] = useState(false);
+  const [seoOverride, setSeoOverride] = useState(null);
   const [error, setError] = useState(null);
   const [focused, setFocused] = useState(false);
 
@@ -255,7 +256,7 @@ export default function App() {
     if (!url.trim()) return;
     let u = url.trim();
     if (!u.startsWith("http")) u = "https://" + u;
-    setLoading(true); setError(null); setTech(null); setMkt(null); setStep(0);
+    setLoading(true); setError(null); setTech(null); setMkt(null); setSeoOverride(null); setStep(0);
     const iv = setInterval(() => setStep(s => Math.min(s + 1, steps.length - 1)), 2500);
     try {
       const [mob, desk] = await Promise.all([fetchPageSpeed(u, "mobile"), fetchPageSpeed(u, "desktop")]);
@@ -264,7 +265,11 @@ export default function App() {
       let html = "";
       try { const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`); html = (await r.json()).contents || ""; } catch {}
       const ai = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ html, url: u }) });
-      if (ai.ok) setMkt(await ai.json());
+      if (ai.ok) {
+        const aiData = await ai.json();
+        if (aiData.seoData) setSeoOverride(aiData.seoData);
+        setMkt(aiData);
+      }
     } catch { setError("Не удалось проанализировать. Проверьте URL."); }
     finally { clearInterval(iv); setLoading(false); setMktLoading(false); }
   }
@@ -406,7 +411,7 @@ export default function App() {
           {/* Section helper */}
           {[
             { num: "01", title: "Маркетинговый анализ", score: mkt?.overall_marketing_score, content: "mkt" },
-            { num: "02", title: "SEO-аудит", score: tech?.seo, content: "seo" },
+            { num: "02", title: "SEO-аудит", score: seoOverride?.seoScore ?? tech?.seo, content: "seo" },
             { num: "03", title: "GEO / AI-поиск", content: "geo", subtitle: "Perplexity, ChatGPT, Яндекс AI" },
             { num: "04", title: "Технические метрики", content: "tech" },
           ].map(({ num, title, score, subtitle, content }) => (
@@ -480,7 +485,7 @@ export default function App() {
 
               {content === "seo" && tech && (
                 <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 6px rgba(0,0,0,0.03)" }}>
-                  {tech.seoItems.map((item, i) => <CheckItem key={i} {...item} />)}
+                  {(seoOverride?.seoItems || tech.seoItems).map((item, i) => <CheckItem key={i} {...item} />)}
                   <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
                     <a href={TELEGRAM_URL} className="btn-blue" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.blue, color: "#fff", borderRadius: 10, padding: "9px 15px", fontSize: 13, fontWeight: 700, boxShadow: "0 3px 12px rgba(27,99,255,0.2)" }}>
                       🔧 Обсудить SEO с маркетологом →
@@ -494,7 +499,7 @@ export default function App() {
                   <div style={{ background: "#F8F5EF", borderRadius: 10, padding: "10px 13px", marginBottom: 12 }}>
                     <p style={{ fontSize: 12, color: T.gray, lineHeight: 1.5, margin: 0 }}>GEO — оптимизация для AI-поисковиков. Структурированные данные помогают ChatGPT и Perplexity правильно понять ваш сайт.</p>
                   </div>
-                  {tech.geoItems.map((item, i) => <CheckItem key={i} {...item} />)}
+                  {(seoOverride?.geoItems || tech.geoItems).map((item, i) => <CheckItem key={i} {...item} />)}
                   <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
                     <a href={TELEGRAM_URL} className="btn-blue" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.blue, color: "#fff", borderRadius: 10, padding: "9px 15px", fontSize: 13, fontWeight: 700, boxShadow: "0 3px 12px rgba(27,99,255,0.2)" }}>
                       🤖 Обсудить GEO-оптимизацию →
