@@ -325,7 +325,7 @@ export default function App() {
         </h1>
 
         <p className="fu2" style={{ fontSize: 15, color: T.gray, lineHeight: 1.7, marginBottom: 36, maxWidth: 440, margin: "0 auto 36px" }}>
-          Маркетинг, SEO, GEO и технический аудит —<br />узнайте где вы теряете клиентов
+          Маркетинг, SEO, GEO и технический аудит —<br />узнайте, где вы теряете клиентов
         </p>
 
         <div className="fu2" style={{
