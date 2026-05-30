@@ -440,24 +440,24 @@ export default function App() {
                         ))}
                       </div>
                       {sections.length > 2 && (
-                        <div style={{ marginTop: 10, borderRadius: 16, overflow: "hidden", position: "relative" }}>
-                          {/* Blurred cards underneath */}
-                          <div style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none", opacity: 0.7 }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10, alignItems: "start" }}>
+                        <div style={{ marginTop: 10, borderRadius: 16, border: "1px solid rgba(0,0,0,0.08)", background: "#fff", overflow: "hidden" }}>
+                          {/* Blurred preview */}
+                          <div style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none", opacity: 0.5, maxHeight: 200, overflow: "hidden" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10, padding: 10 }}>
                               {sections.slice(2).map((s, i) => (
                                 <AccordionCard key={s.title} icon={icons[i + 2]} {...s} delay={0} />
                               ))}
                             </div>
                           </div>
-                          {/* Lock overlay */}
+                          {/* Lock panel below */}
                           <div style={{
-                            position: "absolute", inset: 0,
-                            background: "rgba(240,237,230,0.75)",
+                            background: "rgba(240,237,230,0.95)",
+                            borderTop: "1px solid rgba(0,0,0,0.06)",
                             display: "flex", flexDirection: "column",
-                            alignItems: "center", justifyContent: "center",
-                            gap: 12, padding: 24, textAlign: "center",
+                            alignItems: "center",
+                            gap: 10, padding: "20px 24px", textAlign: "center",
                           }}>
-                            <span style={{ fontSize: 32 }}>🔒</span>
+                            <span style={{ fontSize: 28 }}>🔒</span>
                             <p style={{ fontSize: 15, fontWeight: 800, color: "#111", margin: 0 }}>Полный маркетинговый анализ</p>
                             <p style={{ fontSize: 13, color: "#555", margin: 0, maxWidth: 320 }}>
                               Ещё 4 блока: путь клиента, доверие, структура, мобильный UX
@@ -478,18 +478,20 @@ export default function App() {
                   {mkt?.quick_wins?.length > 0 && (
                     <div style={{ background: "#F1F8F1", border: "1px solid #C8E6C9", borderRadius: 12, padding: "14px 18px", marginTop: 10 }}>
                       <p style={{ fontSize: 11, fontWeight: 800, color: T.green, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>⚡ Быстрые улучшения</p>
-                      {mkt.quick_wins.map((w, i) => <div key={i} style={{ display: "flex", gap: 8, marginBottom: 5 }}><span style={{ color: T.green, fontWeight: 800 }}>→</span><span style={{ fontSize: 13, color: "#1B5E20", lineHeight: 1.5 }}>{w}</span></div>)}
+                      {mkt.quick_wins.slice(0, 2).map((w, i) => <div key={i} style={{ display: "flex", gap: 8, marginBottom: 5 }}><span style={{ color: T.green, fontWeight: 800 }}>→</span><span style={{ fontSize: 13, color: "#1B5E20", lineHeight: 1.5 }}>{w}</span></div>)}
+                      <p style={{ fontSize: 11, color: T.gray, marginTop: 6, fontStyle: "italic" }}>+ ещё улучшения — в полном разборе</p>
                     </div>
                   )}
                   {mkt?.top_problems?.length > 0 && (
                     <div style={{ background: "#FFF5F5", border: "1px solid #FFCDD2", borderRadius: 12, padding: "14px 18px", marginTop: 8 }}>
                       <p style={{ fontSize: 11, fontWeight: 800, color: T.red, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>🔥 Главные проблемы</p>
-                      {mkt.top_problems.map((p, i) => (
+                      {mkt.top_problems.slice(0, 2).map((p, i) => (
                         <div key={i} style={{ display: "flex", gap: 10, marginBottom: 7 }}>
                           <span style={{ minWidth: 20, height: 20, borderRadius: "50%", background: "#FFEBEE", color: T.red, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
                           <p style={{ fontSize: 13, color: "#B71C1C", lineHeight: 1.5, margin: 0 }}>{p}</p>
                         </div>
                       ))}
+                      <p style={{ fontSize: 11, color: T.gray, marginTop: 6, fontStyle: "italic" }}>+ ещё проблемы — в полном разборе</p>
                     </div>
                   )}
                 </>
