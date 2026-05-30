@@ -88,11 +88,25 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { html, url } = req.body;
+    const { html: clientHtml, url } = req.body;
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY not set' });
 
-    const truncatedHtml = (html || '').slice(0, 15000);
+    // Fetch HTML on server side (bypasses CORS)
+    let html = clientHtml || '';
+    if (url && html.length < 500) {
+      try {
+        const pageRes = await fetch(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SiteAuditBot/1.0)' },
+          signal: AbortSignal.timeout(8000),
+        });
+        html = await pageRes.text();
+      } catch (e) {
+        console.log('Could not fetch page:', e.message);
+      }
+    }
+
+    const truncatedHtml = html.slice(0, 15000);
 
     // Parse SEO from HTML
     const seoData = parseSeoFromHtml(html, url || '');
