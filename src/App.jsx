@@ -191,13 +191,11 @@ function CheckItem({ label, ok, tip }) {
 }
 
 async function fetchPageSpeed(url, strategy = "mobile") {
-  const params = new URLSearchParams({
-    url,
-    strategy,
-    key: PAGESPEED_API_KEY,
-    category: ["performance", "seo", "accessibility", "best-practices"],
-  });
-  const res = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?${params}`);
+  const base = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
+  const cats = ["performance", "seo", "accessibility", "best-practices"];
+  const catParams = cats.map(c => `category=${c}`).join("&");
+  const endpoint = `${base}?url=${encodeURIComponent(url)}&strategy=${strategy}&key=${PAGESPEED_API_KEY}&${catParams}`;
+  const res = await fetch(endpoint);
   if (!res.ok) throw new Error("PageSpeed error");
   return res.json();
 }
@@ -430,8 +428,35 @@ export default function App() {
                     </div>
                   )}
                   {sections.length > 0 && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10 }}>
-                      {sections.map((s, i) => <AccordionCard key={s.title} icon={icons[i]} {...s} delay={i * 60} />)}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10, alignItems: "start" }}>
+                      {sections.map((s, i) => {
+                        const isLocked = i >= 3;
+                        return (
+                          <div key={s.title} style={{ position: "relative" }}>
+                            <div style={{ filter: isLocked ? "blur(4px)" : "none", pointerEvents: isLocked ? "none" : "auto", userSelect: isLocked ? "none" : "auto" }}>
+                              <AccordionCard icon={icons[i]} {...s} delay={i * 60} />
+                            </div>
+                            {isLocked && (
+                              <div style={{
+                                position: "absolute", inset: 0,
+                                background: "rgba(240,237,230,0.75)",
+                                backdropFilter: "blur(6px)",
+                                borderRadius: 16,
+                                display: "flex", flexDirection: "column",
+                                alignItems: "center", justifyContent: "center",
+                                gap: 10, padding: 20, textAlign: "center",
+                              }}>
+                                <span style={{ fontSize: 24 }}>🔒</span>
+                                <p style={{ fontSize: 13, fontWeight: 700, color: "#111", margin: 0 }}>Полный анализ — в маркетинг-разборе</p>
+                                <p style={{ fontSize: 12, color: "#666", margin: 0 }}>Разберу лично: оффер, структуру, доверие</p>
+                                <a href="https://t.me/ksukirillova" style={{ background: "#1B63FF", color: "#fff", borderRadius: 10, padding: "8px 16px", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+                                  Маркетинг-разбор за 3 500 ₽ →
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                   {mkt?.quick_wins?.length > 0 && (
