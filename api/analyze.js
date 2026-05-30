@@ -52,7 +52,8 @@ function parseSeoFromHtml(html, url) {
   // tap targets - can't really check from HTML alone
   const hasTapTargets = true; // assume ok, can't verify from HTML
 
-  const seoScore = Math.round([hasTitle, hasMetaDesc, hasCanonical, hasHttps, hasAltTags, hasGoodLinks].filter(Boolean).length / 6 * 100);
+  const seoChecks = [hasTitle, hasMetaDesc, hasCanonical, hasHttps, hasAltTags, hasGoodLinks, hasViewport];
+  const seoScore = Math.round(seoChecks.filter(Boolean).length / seoChecks.length * 100);
 
   return {
     seoScore,
@@ -64,7 +65,7 @@ function parseSeoFromHtml(html, url) {
       { label: "Alt-теги у изображений", ok: hasAltTags, tip: "Добавьте alt='описание' к каждому <img>." },
       { label: "Тексты ссылок", ok: hasGoodLinks, tip: "Замените 'нажмите здесь' на конкретные описания." },
       { label: "Viewport мобильных", ok: hasViewport, tip: "<meta name='viewport' content='width=device-width, initial-scale=1'>" },
-      { label: "Robots.txt", ok: null, tip: "Создайте robots.txt: User-agent: * / Allow: /" },
+      { label: "Robots.txt", ok: null, tip: "Создайте robots.txt в корне сайта: User-agent: * / Allow: /" },
       { label: "HTTP → HTTPS редирект", ok: hasHttps, tip: "301-редирект в .htaccess или настройках сервера." },
       { label: "Размер кнопок", ok: null, tip: "Кнопки минимум 48×48px на мобильном." },
     ],
