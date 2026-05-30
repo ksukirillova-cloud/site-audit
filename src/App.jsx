@@ -440,26 +440,36 @@ export default function App() {
                         ))}
                       </div>
                       {sections.length > 2 && (
-                        <div style={{ position: "relative", marginTop: 10 }}>
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10, alignItems: "start", filter: "blur(5px)", pointerEvents: "none", userSelect: "none" }}>
-                            {sections.slice(2).map((s, i) => (
-                              <AccordionCard key={s.title} icon={icons[i + 2]} {...s} delay={0} />
-                            ))}
+                        <div style={{ marginTop: 10, borderRadius: 16, overflow: "hidden", position: "relative" }}>
+                          {/* Blurred cards underneath */}
+                          <div style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none", opacity: 0.7 }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10, alignItems: "start" }}>
+                              {sections.slice(2).map((s, i) => (
+                                <AccordionCard key={s.title} icon={icons[i + 2]} {...s} delay={0} />
+                              ))}
+                            </div>
                           </div>
+                          {/* Lock overlay */}
                           <div style={{
                             position: "absolute", inset: 0,
-                            background: "rgba(240,237,230,0.6)",
-                            borderRadius: 16,
+                            background: "rgba(240,237,230,0.75)",
                             display: "flex", flexDirection: "column",
                             alignItems: "center", justifyContent: "center",
                             gap: 12, padding: 24, textAlign: "center",
                           }}>
                             <span style={{ fontSize: 32 }}>🔒</span>
                             <p style={{ fontSize: 15, fontWeight: 800, color: "#111", margin: 0 }}>Полный маркетинговый анализ</p>
-                            <p style={{ fontSize: 13, color: "#555", margin: 0, maxWidth: 320 }}>Ещё 4 блока: УТП, доверие, структура, мобильный UX — только в маркетинг-разборе</p>
-                            <a href="https://t.me/ksukirillova" style={{ background: "#1B63FF", color: "#fff", borderRadius: 12, padding: "12px 24px", fontSize: 14, fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 16px rgba(27,99,255,0.3)" }}>
-                              Маркетинг-разбор за 3 500 ₽ →
-                            </a>
+                            <p style={{ fontSize: 13, color: "#555", margin: 0, maxWidth: 320 }}>
+                              Ещё 4 блока: путь клиента, доверие, структура, мобильный UX
+                            </p>
+                            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", marginTop: 4 }}>
+                              <a href="https://t.me/ksukirillova" style={{ background: "#1B63FF", color: "#fff", borderRadius: 12, padding: "11px 20px", fontSize: 13, fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 16px rgba(27,99,255,0.3)" }}>
+                                Маркетинг-разбор за 3 500 ₽ →
+                              </a>
+                              <a href="https://t.me/ksukirillova" style={{ background: "#fff", color: "#1B63FF", border: "2px solid #1B63FF", borderRadius: 12, padding: "11px 20px", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
+                                Купить полный разбор
+                              </a>
+                            </div>
                           </div>
                         </div>
                       )}
