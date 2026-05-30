@@ -1,131 +1,159 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const PAGESPEED_API_KEY = "AIzaSyB8O9to0nJJJMznVgTXqvsohJH16wXY6Z8";
 const TELEGRAM_URL = "https://t.me/ksukirillova";
 
-function scoreColor(s) {
-  if (s >= 80) return "#C8FF3D";
-  if (s >= 50) return "#FF8C3D";
-  return "#FF3D3D";
-}
-function scoreLabel(s) {
-  if (s >= 80) return "Хорошо";
-  if (s >= 50) return "Есть проблемы";
-  return "Критично";
+const T = {
+  bg: "#F0EDE6",
+  white: "#FFFFFF",
+  black: "#0F0F0F",
+  blue: "#1B63FF",
+  lime: "#C8FF3D",
+  gray: "#6B6B6B",
+  lightgray: "#E4E0D8",
+  card: "#FAFAF7",
+  border: "rgba(0,0,0,0.08)",
+  red: "#D32F2F",
+  orange: "#E65100",
+  green: "#2E7D32",
+};
+
+function scoreColor(s) { return s >= 80 ? T.green : s >= 50 ? T.orange : T.red; }
+function scoreBg(s) { return s >= 80 ? "#E8F5E9" : s >= 50 ? "#FFF3E0" : "#FFEBEE"; }
+function scoreLabel(s) { return s >= 80 ? "Хорошо" : s >= 50 ? "Проблемы" : "Критично"; }
+
+function AnimatedNumber({ target }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    let v = 0;
+    const step = target / 60;
+    const t = setInterval(() => { v = Math.min(v + step, target); setVal(Math.round(v)); if (v >= target) clearInterval(t); }, 16);
+    return () => clearInterval(t);
+  }, [target]);
+  return <>{val}</>;
 }
 
-function CircleScore({ score, size = 80 }) {
-  const r = size / 2 - 6;
+function ScoreRing({ score, size = 72 }) {
+  const r = size / 2 - 5;
   const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
-  const color = scoreColor(score);
+  const [dash, setDash] = useState(0);
+  useEffect(() => { setTimeout(() => setDash((score / 100) * circ), 200); }, [score, circ]);
   return (
-    <svg width={size} height={size} style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#2a2a2a" strokeWidth={5} />
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={5}
-        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-        style={{ transition: "stroke-dasharray 1s ease" }} />
-      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central"
-        fill={color} fontSize={size * 0.22} fontWeight="800"
-        style={{ transform: "rotate(90deg)", transformOrigin: "center", fontFamily: "inherit" }}>
-        {score}
-      </text>
-    </svg>
+    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} style={{ transform: "rotate(-90deg)", position: "absolute" }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={T.lightgray} strokeWidth={4} />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={scoreColor(score)} strokeWidth={4}
+          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+          style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)" }} />
+      </svg>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: size * 0.24, fontWeight: 900, color: scoreColor(score), fontFamily: "'Space Grotesk', monospace", lineHeight: 1 }}>
+          <AnimatedNumber target={score} />
+        </span>
+      </div>
+    </div>
   );
 }
 
 function Tag({ text, type = "error" }) {
-  const c = { error: "#FF3D3D", warning: "#FF8C3D", ok: "#C8FF3D" }[type];
+  const c = {
+    error: { bg: "#FFEBEE", fg: T.red, border: "#FFCDD2" },
+    ok: { bg: "#E8F5E9", fg: T.green, border: "#C8E6C9" },
+    warning: { bg: "#FFF3E0", fg: T.orange, border: "#FFE0B2" },
+  }[type];
+  const icon = type === "ok" ? "✓" : type === "warning" ? "⚠" : "✗";
   return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 4,
-      background: c + "18", color: c, border: `1px solid ${c}33`,
-      borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 700,
-      marginRight: 6, marginBottom: 6,
-    }}>
-      {type === "ok" ? "✓" : type === "warning" ? "⚠" : "✗"} {text}
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: c.bg, color: c.fg, border: `1px solid ${c.border}`, borderRadius: 6, padding: "3px 9px", fontSize: 11, fontWeight: 700, marginRight: 6, marginBottom: 6 }}>
+      {icon} {text}
     </span>
   );
 }
 
-function SectionCard({ icon, title, score, verdict, issues = [], positives = [], recommendation, fix_tip, accent }) {
+function AccordionCard({ icon, title, score, verdict, issues = [], positives = [], recommendation, fix_tip, delay = 0 }) {
+  const [open, setOpen] = useState(false);
   const [showTip, setShowTip] = useState(false);
-  const color = scoreColor(score);
+  const [visible, setVisible] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  useEffect(() => { setTimeout(() => setVisible(true), delay); }, [delay]);
 
   return (
     <div style={{
-      background: accent ? "#0d1a2e" : "#161616",
-      border: `1px solid ${accent ? "#1B63FF44" : "#2a2a2a"}`,
-      borderRadius: 20, padding: "24px",
-      marginBottom: 12,
-    }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 20 }}>{icon}</span>
-          <div>
-            <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.02em" }}>{title}</h3>
-            <p style={{ fontSize: 13, color: "#888", marginTop: 2, lineHeight: 1.4 }}>{verdict}</p>
+      background: T.white,
+      border: `1px solid ${hovered || open ? T.blue + "33" : T.border}`,
+      borderRadius: 16, overflow: "hidden",
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateY(0)" : "translateY(12px)",
+      transition: "opacity 0.4s ease, transform 0.4s ease, border-color 0.2s, box-shadow 0.2s",
+      boxShadow: open ? "0 8px 32px rgba(27,99,255,0.1)" : hovered ? "0 4px 16px rgba(0,0,0,0.06)" : "0 1px 4px rgba(0,0,0,0.04)",
+    }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <button onClick={() => setOpen(!open)} style={{
+        width: "100%", background: "none", border: "none", padding: "16px 18px",
+        cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: "inherit", textAlign: "left",
+      }}>
+        <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+            <span style={{ fontSize: 13, fontWeight: 800, color: T.black }}>{title}</span>
+            <span style={{ background: scoreBg(score), color: scoreColor(score), borderRadius: 5, padding: "1px 6px", fontSize: 10, fontWeight: 700 }}>{scoreLabel(score)}</span>
           </div>
+          <p style={{ fontSize: 12, color: T.gray, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{verdict}</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <CircleScore score={score} size={56} />
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <div style={{ width: 38, height: 38, borderRadius: "50%", background: scoreBg(score), border: `2px solid ${scoreColor(score)}44`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 12, fontWeight: 900, color: scoreColor(score) }}>{score}</span>
+          </div>
+          <span style={{ color: T.gray, fontSize: 13, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.3s ease" }}>▾</span>
         </div>
-      </div>
+      </button>
 
-      {/* Score bar */}
-      <div style={{ background: "#2a2a2a", borderRadius: 4, height: 4, marginBottom: 16 }}>
-        <div style={{ width: `${score}%`, background: color, borderRadius: 4, height: 4, transition: "width 1s ease" }} />
-      </div>
+      <div style={{ maxHeight: open ? "900px" : "0", overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ padding: "0 18px 18px", borderTop: `1px solid ${T.border}` }}>
+          {/* Score bar */}
+          <div style={{ background: T.lightgray, borderRadius: 4, height: 4, margin: "14px 0 12px" }}>
+            <div style={{ width: `${score}%`, background: `linear-gradient(90deg, ${scoreColor(score)}88, ${scoreColor(score)})`, borderRadius: 4, height: 4, transition: "width 1s cubic-bezier(0.4,0,0.2,1)" }} />
+          </div>
 
-      {/* Tags */}
-      <div style={{ marginBottom: issues.length || positives.length ? 14 : 0 }}>
-        {issues.map((t, i) => <Tag key={i} text={t} type="error" />)}
-        {positives.map((t, i) => <Tag key={i} text={t} type="ok" />)}
-      </div>
+          <p style={{ fontSize: 13, color: "#444", lineHeight: 1.6, marginBottom: 12 }}>{verdict}</p>
 
-      {/* Recommendation */}
-      {recommendation && (
-        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
-          <p style={{ fontSize: 11, color: "#666", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.08em" }}>Рекомендация</p>
-          <p style={{ fontSize: 13, color: "#ccc", lineHeight: 1.5 }}>{recommendation}</p>
-        </div>
-      )}
+          {issues.length > 0 && <div style={{ marginBottom: 10 }}>{issues.map((t, i) => <Tag key={i} text={t} type="error" />)}</div>}
+          {positives.length > 0 && <div style={{ marginBottom: 10 }}>{positives.map((t, i) => <Tag key={i} text={t} type="ok" />)}</div>}
 
-      {/* Fix tip toggle */}
-      {fix_tip && (
-        <div style={{ marginBottom: 14 }}>
-          <button onClick={() => setShowTip(!showTip)} style={{
-            background: "none", border: "1px solid #333",
-            color: "#888", borderRadius: 8, padding: "6px 14px",
-            fontSize: 12, fontWeight: 700, cursor: "pointer",
-            fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6,
-          }}>
-            {showTip ? "▲" : "▼"} Как исправить самостоятельно
-          </button>
-          {showTip && (
-            <div style={{
-              marginTop: 8, background: "#0f1a0f", border: "1px solid #1f3f1f",
-              borderRadius: 10, padding: "12px 14px",
-            }}>
-              <p style={{ fontSize: 13, color: "#aaffaa", lineHeight: 1.5 }}>{fix_tip}</p>
+          {recommendation && (
+            <div style={{ background: "#EEF3FF", border: "1px solid #C5D5FF", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
+              <p style={{ fontSize: 10, color: T.blue, fontWeight: 800, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.08em" }}>Рекомендация</p>
+              <p style={{ fontSize: 13, color: "#1A3A80", lineHeight: 1.5, margin: 0 }}>{recommendation}</p>
             </div>
           )}
-        </div>
-      )}
 
-      {/* CTA */}
-      <a href={TELEGRAM_URL} style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        background: score < 50 ? "#1B63FF" : "#1e1e1e",
-        color: score < 50 ? "#fff" : "#888",
-        border: score < 50 ? "none" : "1px solid #333",
-        borderRadius: 10, padding: "8px 16px",
-        fontSize: 12, fontWeight: 700, textDecoration: "none",
-        transition: "all 0.2s",
-      }}>
-        {score < 50 ? "🔧 Обсудить как исправить →" : "💬 Обсудить с маркетологом"}
-      </a>
+          {fix_tip && (
+            <div style={{ marginBottom: 12 }}>
+              <button onClick={() => setShowTip(!showTip)} style={{ background: "none", border: `1px solid ${T.lightgray}`, color: T.gray, borderRadius: 8, padding: "5px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}>
+                {showTip ? "▲ Скрыть" : "▼ Как исправить самостоятельно"}
+              </button>
+              {showTip && (
+                <div style={{ marginTop: 8, background: "#F1F8F1", border: "1px solid #C8E6C9", borderRadius: 10, padding: "12px 14px" }}>
+                  <p style={{ fontSize: 13, color: "#1B5E20", lineHeight: 1.5, margin: 0 }}>{fix_tip}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <a href={TELEGRAM_URL} style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: score < 50 ? T.blue : "none",
+            color: score < 50 ? "#fff" : T.blue,
+            border: score < 50 ? "none" : `1.5px solid ${T.blue}`,
+            borderRadius: 10, padding: "8px 14px", fontSize: 12, fontWeight: 700,
+            transition: "all 0.2s",
+            boxShadow: score < 50 ? "0 4px 14px rgba(27,99,255,0.25)" : "none",
+          }}>
+            {score < 50 ? "🔧 Обсудить как исправить →" : "💬 Обсудить с маркетологом"}
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
@@ -133,48 +161,29 @@ function SectionCard({ icon, title, score, verdict, issues = [], positives = [],
 function CheckItem({ label, ok, tip }) {
   const [showTip, setShowTip] = useState(false);
   return (
-    <div style={{ marginBottom: 8 }}>
+    <div style={{ marginBottom: 6 }}>
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: "#1e1e1e", borderRadius: 10, padding: "10px 14px",
-        gap: 10,
+        background: ok ? "#F1F8F1" : "#FFF5F5",
+        border: `1px solid ${ok ? "#C8E6C9" : "#FFCDD2"}`,
+        borderRadius: 10, padding: "9px 13px", gap: 10,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{
-            width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-            background: ok ? "#C8FF3D22" : "#FF3D3D22",
-            color: ok ? "#C8FF3D" : "#FF3D3D",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 11, fontWeight: 800,
-          }}>{ok ? "✓" : "✗"}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: ok ? "#aaa" : "#fff" }}>{label}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ color: ok ? T.green : T.red, fontWeight: 800, fontSize: 12 }}>{ok ? "✓" : "✗"}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: T.black }}>{label}</span>
         </div>
         {!ok && tip && (
-          <button onClick={() => setShowTip(!showTip)} style={{
-            background: "none", border: "1px solid #333",
-            color: "#666", borderRadius: 6, padding: "4px 10px",
-            fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-            whiteSpace: "nowrap",
-          }}>
+          <button onClick={() => setShowTip(!showTip)} style={{ background: "none", border: `1px solid ${T.lightgray}`, color: T.gray, borderRadius: 6, padding: "3px 9px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
             {showTip ? "Скрыть" : "Как исправить"}
           </button>
         )}
         {ok && (
-          <a href={TELEGRAM_URL} style={{
-            background: "none", border: "1px solid #2a2a2a",
-            color: "#555", borderRadius: 6, padding: "4px 10px",
-            fontSize: 11, fontWeight: 700, textDecoration: "none",
-            whiteSpace: "nowrap",
-          }}>Обсудить</a>
+          <a href={TELEGRAM_URL} style={{ background: "none", border: `1px solid ${T.lightgray}`, color: T.gray, borderRadius: 6, padding: "3px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>Обсудить</a>
         )}
       </div>
       {showTip && (
-        <div style={{
-          background: "#0f1a0f", border: "1px solid #1f3f1f",
-          borderRadius: "0 0 10px 10px", padding: "10px 14px",
-          marginTop: -4,
-        }}>
-          <p style={{ fontSize: 12, color: "#aaffaa", lineHeight: 1.5 }}>{tip}</p>
+        <div style={{ background: "#F1F8F1", border: "1px solid #C8E6C9", borderRadius: "0 0 10px 10px", padding: "10px 13px", marginTop: -4 }}>
+          <p style={{ fontSize: 12, color: "#2E7D32", lineHeight: 1.5, margin: 0 }}>{tip}</p>
         </div>
       )}
     </div>
@@ -182,46 +191,20 @@ function CheckItem({ label, ok, tip }) {
 }
 
 async function fetchPageSpeed(url, strategy = "mobile") {
-  const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&key=${PAGESPEED_API_KEY}`;
-  const res = await fetch(endpoint);
-  if (!res.ok) throw new Error("PageSpeed API error");
+  const res = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&key=${PAGESPEED_API_KEY}`);
+  if (!res.ok) throw new Error("PageSpeed error");
   return res.json();
 }
 
-function parseTechnical(mobileData, desktopData) {
-  const lhr = mobileData.lighthouseResult;
+function parseTech(mob, desk) {
+  const lhr = mob.lighthouseResult;
   const cats = lhr.categories;
-  const audits = lhr.audits;
-
-  const perf    = Math.round((cats.performance?.score || 0) * 100);
-  const seo     = Math.round((cats.seo?.score || 0) * 100);
-  const acc     = Math.round((cats.accessibility?.score || 0) * 100);
-  const bp      = Math.round((cats["best-practices"]?.score || 0) * 100);
-  const deskPerf = Math.round((desktopData.lighthouseResult.categories.performance?.score || 0) * 100);
-
-  const a = audits;
-
-  const seoItems = [
-    { label: "Title страницы",              ok: a["document-title"]?.score === 1,     tip: "Добавьте тег <title> в <head> — он должен описывать страницу за 50-60 символов." },
-    { label: "Мета-описание",               ok: a["meta-description"]?.score === 1,   tip: "Добавьте <meta name='description' content='...'> в <head> — 150-160 символов о содержании страницы." },
-    { label: "Canonical URL",               ok: a["canonical"]?.score === 1,          tip: "Добавьте <link rel='canonical' href='https://yoursite.com/page'> чтобы избежать дублей." },
-    { label: "Robots.txt",                  ok: a["robots-txt"]?.score === 1,         tip: "Создайте файл robots.txt в корне сайта. Минимум: User-agent: * / Allow: /" },
-    { label: "Alt-теги у изображений",      ok: a["image-alt"]?.score === 1,          tip: "Добавьте атрибут alt='описание' к каждому тегу <img>. Описывайте что на картинке." },
-    { label: "Осмысленные тексты ссылок",   ok: a["link-text"]?.score === 1,          tip: "Замените 'нажмите здесь' и 'подробнее' на конкретные описания: 'Читать статью о SEO'." },
-    { label: "HTTPS",                       ok: a["is-on-https"]?.score === 1,        tip: "Получите SSL-сертификат — большинство хостингов дают его бесплатно через Let's Encrypt." },
-    { label: "HTTP → HTTPS редирект",       ok: a["redirects-http"]?.score === 1,     tip: "Настройте 301-редирект с http:// на https:// в файле .htaccess или настройках сервера." },
-    { label: "Viewport для мобильных",      ok: a["viewport"]?.score === 1,           tip: "Добавьте в <head>: <meta name='viewport' content='width=device-width, initial-scale=1'>" },
-    { label: "Размер кнопок на мобильном",  ok: a["tap-targets"]?.score === 1,        tip: "Кнопки должны быть минимум 48x48px с отступами между ними. Проверьте в DevTools → Mobile." },
-  ];
-
-  const geoItems = [
-    { label: "Open Graph теги (og:title, og:description)", ok: !!lhr.audits["structured-data"] || false, tip: "Добавьте og:title, og:description, og:image в <head> для красивого превью в соцсетях." },
-    { label: "Schema.org разметка",         ok: false, tip: "Добавьте JSON-LD разметку: Organization, LocalBusiness или Person в зависимости от типа сайта." },
-    { label: "Hreflang для мультиязычных",  ok: a["hreflang"]?.score === 1,           tip: "Если сайт на одном языке — не нужно. Для мультиязычных: <link rel='alternate' hreflang='ru' href='...'>" },
-    { label: "Sitemap.xml",                 ok: false, tip: "Создайте sitemap.xml с URL всех страниц и зарегистрируйте в Google Search Console и Яндекс.Вебмастер." },
-    { label: "Структурированные данные",    ok: false, tip: "Добавьте JSON-LD с данными о вашем бизнесе — это помогает AI-поисковикам (Perplexity, ChatGPT) правильно понять ваш сайт." },
-  ];
-
+  const a = lhr.audits;
+  const perf = Math.round((cats.performance?.score || 0) * 100);
+  const seo = Math.round((cats.seo?.score || 0) * 100);
+  const acc = Math.round((cats.accessibility?.score || 0) * 100);
+  const bp = Math.round((cats["best-practices"]?.score || 0) * 100);
+  const deskPerf = Math.round((desk.lighthouseResult.categories.performance?.score || 0) * 100);
   return {
     overall: Math.round((perf + seo + acc + bp) / 4),
     perf, seo, acc, bp, deskPerf,
@@ -229,171 +212,187 @@ function parseTechnical(mobileData, desktopData) {
     lcp: a["largest-contentful-paint"]?.displayValue || "—",
     tbt: a["total-blocking-time"]?.displayValue || "—",
     cls: a["cumulative-layout-shift"]?.displayValue || "—",
-    si:  a["speed-index"]?.displayValue || "—",
-    seoItems,
-    geoItems,
+    si: a["speed-index"]?.displayValue || "—",
     url: lhr.finalUrl,
+    seoItems: [
+      { label: "Title страницы", ok: a["document-title"]?.score === 1, tip: "Добавьте <title> в <head> — 50-60 символов." },
+      { label: "Мета-описание", ok: a["meta-description"]?.score === 1, tip: "Добавьте <meta name='description' content='...'> — 150-160 символов." },
+      { label: "Canonical URL", ok: a["canonical"]?.score === 1, tip: "Добавьте <link rel='canonical' href='https://yoursite.com/page'>." },
+      { label: "Robots.txt", ok: a["robots-txt"]?.score === 1, tip: "Создайте robots.txt: User-agent: * / Allow: /" },
+      { label: "Alt-теги у изображений", ok: a["image-alt"]?.score === 1, tip: "Добавьте alt='описание' к каждому <img>." },
+      { label: "Тексты ссылок", ok: a["link-text"]?.score === 1, tip: "Замените 'нажмите здесь' на конкретные описания." },
+      { label: "HTTPS", ok: a["is-on-https"]?.score === 1, tip: "SSL-сертификат — бесплатно через Let's Encrypt." },
+      { label: "HTTP → HTTPS редирект", ok: a["redirects-http"]?.score === 1, tip: "301-редирект в .htaccess или настройках сервера." },
+      { label: "Viewport мобильных", ok: a["viewport"]?.score === 1, tip: "<meta name='viewport' content='width=device-width, initial-scale=1'>" },
+      { label: "Размер кнопок на мобильном", ok: a["tap-targets"]?.score === 1, tip: "Кнопки минимум 48×48px." },
+    ],
+    geoItems: [
+      { label: "Open Graph теги", ok: false, tip: "og:title, og:description, og:image для превью в соцсетях." },
+      { label: "Schema.org разметка", ok: false, tip: "JSON-LD: Organization или LocalBusiness в <head>." },
+      { label: "Hreflang", ok: a["hreflang"]?.score === 1, tip: "Для мультиязычных: <link rel='alternate' hreflang='ru'>." },
+      { label: "Sitemap.xml", ok: false, tip: "Создайте и зарегистрируйте в Google Search Console." },
+      { label: "Структурированные данные", ok: false, tip: "JSON-LD с данными о бизнесе помогает AI-поисковикам." },
+    ],
   };
 }
 
-export default function SiteAudit() {
-  const [url, setUrl]           = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [step, setStep]         = useState(0);
-  const [techData, setTechData] = useState(null);
-  const [mktData, setMktData]   = useState(null);
+export default function App() {
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(0);
+  const [tech, setTech] = useState(null);
+  const [mkt, setMkt] = useState(null);
   const [mktLoading, setMktLoading] = useState(false);
-  const [error, setError]       = useState(null);
+  const [error, setError] = useState(null);
+  const [focused, setFocused] = useState(false);
 
-  const steps = [
-    "Загружаю страницу...",
-    "Анализирую скорость...",
-    "Проверяю SEO...",
-    "AI анализирует маркетинг...",
-    "Готовлю отчёт...",
-  ];
+  const steps = ["Загружаю страницу...", "Анализирую скорость...", "Проверяю SEO...", "AI анализирует маркетинг...", "Готовлю отчёт..."];
 
-  async function handleAudit() {
+  async function run() {
     if (!url.trim()) return;
     let u = url.trim();
     if (!u.startsWith("http")) u = "https://" + u;
-
-    setLoading(true); setError(null);
-    setTechData(null); setMktData(null); setStep(0);
-
+    setLoading(true); setError(null); setTech(null); setMkt(null); setStep(0);
     const iv = setInterval(() => setStep(s => Math.min(s + 1, steps.length - 1)), 2500);
-
     try {
-      // PageSpeed
-      const [mob, desk] = await Promise.all([
-        fetchPageSpeed(u, "mobile"),
-        fetchPageSpeed(u, "desktop"),
-      ]);
-      setTechData(parseTechnical(mob, desk));
-
-      // Fetch HTML via proxy
+      const [mob, desk] = await Promise.all([fetchPageSpeed(u, "mobile"), fetchPageSpeed(u, "desktop")]);
+      setTech(parseTech(mob, desk));
       setMktLoading(true);
       let html = "";
-      try {
-        const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`);
-        const d = await r.json();
-        html = d.contents || "";
-      } catch {}
-
-      // AI marketing analysis
-      const aiRes = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ html, url: u }),
-      });
-      const aiJson = await aiRes.json();
-console.log('AI response:', aiRes.status, aiJson);
-if (aiRes.ok) setMktData(aiJson);
-
-    } catch (e) {
-      setError("Не удалось проанализировать. Проверьте URL и попробуйте снова.");
-    } finally {
-      clearInterval(iv);
-      setLoading(false);
-      setMktLoading(false);
-    }
+      try { const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`); html = (await r.json()).contents || ""; } catch {}
+      const ai = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ html, url: u }) });
+      if (ai.ok) setMkt(await ai.json());
+    } catch { setError("Не удалось проанализировать. Проверьте URL."); }
+    finally { clearInterval(iv); setLoading(false); setMktLoading(false); }
   }
 
-  const hasResults = techData || mktData;
+  const sections = mkt?.sections ? Object.values(mkt.sections) : [];
+  const icons = ["🎯", "💡", "👆", "🤝", "📋", "📱"];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#111", color: "#fff", fontFamily: "'Inter Tight', system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: T.bg, color: T.black, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Space+Grotesk:wght@700;800;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::placeholder { color: #555; }
+        ::placeholder { color: #bbb; }
+        a { text-decoration: none; color: inherit; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-        .fu { animation: fadeUp 0.5s ease forwards; }
-        a:hover { opacity: 0.85; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes waveIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+        .fu { animation: fadeUp 0.5s cubic-bezier(0.4,0,0.2,1) both; }
+        .fu1 { animation: fadeUp 0.5s 0.1s cubic-bezier(0.4,0,0.2,1) both; }
+        .fu2 { animation: fadeUp 0.5s 0.2s cubic-bezier(0.4,0,0.2,1) both; }
+        .btn-lime { transition: all 0.2s ease !important; }
+        .btn-lime:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 28px rgba(200,255,61,0.35) !important; }
+        .btn-blue { transition: all 0.2s ease !important; }
+        .btn-blue:hover { transform: translateY(-1px) !important; box-shadow: 0 6px 20px rgba(27,99,255,0.3) !important; }
       `}</style>
 
+      {/* Subtle decorative blobs */}
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
+        <div style={{ position: "absolute", top: -100, right: -100, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(27,99,255,0.07) 0%, transparent 65%)" }} />
+        <div style={{ position: "absolute", bottom: -80, left: -80, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(200,255,61,0.08) 0%, transparent 65%)" }} />
+      </div>
+
       {/* Header */}
-      <header style={{ borderBottom: "1px solid #1e1e1e", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#111", zIndex: 100 }}>
-        <a href="https://kirillova.online" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <span style={{ width: 32, height: 32, borderRadius: "50%", background: "#fff", color: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14 }}>К</span>
-          <span style={{ fontSize: 14, fontWeight: 700 }}>kirillova.online</span>
+      <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(240,237,230,0.85)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${T.border}`, padding: "13px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <a href="https://kirillova.online" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ width: 32, height: 32, borderRadius: "50%", background: T.black, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14 }}>К</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: T.black }}>kirillova.online</span>
         </a>
-        <a href={TELEGRAM_URL} style={{ background: "#1B63FF", color: "#fff", borderRadius: 20, padding: "8px 18px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Написать</a>
+        <a href={TELEGRAM_URL} className="btn-blue" style={{ background: T.blue, color: "#fff", borderRadius: 20, padding: "8px 18px", fontSize: 13, fontWeight: 700, boxShadow: "0 3px 12px rgba(27,99,255,0.25)" }}>Написать</a>
       </header>
 
       {/* Hero */}
-      <section style={{ padding: "60px 24px 40px", maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: 20, padding: "6px 14px", marginBottom: 24, fontSize: 12, fontWeight: 700, color: "#888", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C8FF3D" }} />
+      <section style={{ position: "relative", zIndex: 1, padding: "64px 24px 48px", maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
+        <div className="fu" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: T.white, border: `1px solid ${T.border}`, borderRadius: 20, padding: "6px 14px", marginBottom: 24, fontSize: 11, fontWeight: 700, color: T.gray, letterSpacing: "0.1em", textTransform: "uppercase", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4CAF50", boxShadow: "0 0 6px #4CAF50", animation: "pulse 2s infinite" }} />
           Бесплатный AI-аудит сайта
         </div>
-        <h1 style={{ fontSize: "clamp(30px, 6vw, 52px)", fontWeight: 900, lineHeight: 1.02, letterSpacing: "-0.04em", marginBottom: 16 }}>
-          Прожарим ваш сайт<br /><span style={{ color: "#C8FF3D" }}>за 30 секунд</span>
+
+        <h1 className="fu1" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 900, lineHeight: 1.03, letterSpacing: "-0.04em", marginBottom: 10, color: T.black }}>
+          Прожарим ваш сайт
         </h1>
-        <p style={{ fontSize: 16, color: "#888", lineHeight: 1.6, marginBottom: 36, maxWidth: 480, margin: "0 auto 36px" }}>
+        <h1 className="fu1" style={{
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 900, lineHeight: 1.03,
+          letterSpacing: "-0.04em", marginBottom: 20,
+          background: `linear-gradient(135deg, ${T.blue} 0%, #5B8CFF 50%, #C8FF3D 100%)`,
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        }}>
+          за 30 секунд
+        </h1>
+
+        <p className="fu2" style={{ fontSize: 15, color: T.gray, lineHeight: 1.7, marginBottom: 36, maxWidth: 440, margin: "0 auto 36px" }}>
           Маркетинг, SEO, GEO и технический аудит —<br />узнайте где вы теряете клиентов
         </p>
-        <div style={{ display: "flex", gap: 8, maxWidth: 580, margin: "0 auto", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: 16, padding: 8 }}>
-          <input type="text" value={url} onChange={e => setUrl(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && !loading && handleAudit()}
+
+        <div className="fu2" style={{
+          display: "flex", gap: 8, maxWidth: 560, margin: "0 auto",
+          background: T.white,
+          border: `1.5px solid ${focused ? T.blue : T.border}`,
+          borderRadius: 14, padding: 6,
+          boxShadow: focused ? `0 0 0 3px rgba(27,99,255,0.1), 0 4px 20px rgba(0,0,0,0.06)` : "0 2px 12px rgba(0,0,0,0.05)",
+          transition: "all 0.3s ease",
+        }}>
+          <input value={url} onChange={e => setUrl(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && !loading && run()}
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
             placeholder="yoursite.ru или https://..."
-            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 15, fontWeight: 500, padding: "10px 14px", fontFamily: "inherit" }} />
-          <button onClick={handleAudit} disabled={loading || !url.trim()} style={{ background: loading ? "#2a2a2a" : "#C8FF3D", color: "#111", border: "none", borderRadius: 10, padding: "10px 24px", fontSize: 14, fontWeight: 800, cursor: loading ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "inherit" }}>
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.black, fontSize: 15, fontWeight: 500, padding: "10px 14px", fontFamily: "inherit" }} />
+          <button onClick={run} disabled={loading || !url.trim()} className="btn-lime"
+            style={{ background: loading ? T.lightgray : T.lime, color: T.black, border: "none", borderRadius: 10, padding: "10px 22px", fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", fontFamily: "inherit", cursor: loading ? "not-allowed" : "pointer", boxShadow: loading ? "none" : "0 3px 12px rgba(200,255,61,0.3)" }}>
             {loading ? "Анализирую..." : "Проверить →"}
           </button>
         </div>
-        {error && <p style={{ marginTop: 16, color: "#FF3D3D", fontSize: 13 }}>{error}</p>}
+        {error && <p style={{ marginTop: 14, color: T.red, fontSize: 13 }}>{error}</p>}
       </section>
 
       {/* Loading */}
       {loading && (
-        <section style={{ padding: "20px 24px 40px", maxWidth: 500, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ width: 44, height: 44, border: "3px solid #222", borderTop: "3px solid #C8FF3D", borderRadius: "50%", margin: "0 auto 20px", animation: "spin 0.8s linear infinite" }} />
-          <p style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{steps[step]}</p>
-          <p style={{ fontSize: 13, color: "#666" }}>Обычно занимает 15–30 секунд</p>
-          <div style={{ marginTop: 20, display: "flex", justifyContent: "center", gap: 6 }}>
+        <section style={{ position: "relative", zIndex: 1, padding: "10px 24px 40px", maxWidth: 460, margin: "0 auto", textAlign: "center" }}>
+          <div style={{ width: 40, height: 40, border: `3px solid ${T.lightgray}`, borderTop: `3px solid ${T.blue}`, borderRadius: "50%", margin: "0 auto 18px", animation: "spin 0.8s linear infinite" }} />
+          <p style={{ fontSize: 15, fontWeight: 700, color: T.black, marginBottom: 5 }}>{steps[step]}</p>
+          <p style={{ fontSize: 12, color: T.gray }}>Обычно 15–30 секунд</p>
+          <div style={{ marginTop: 16, display: "flex", justifyContent: "center", gap: 5 }}>
             {steps.map((_, i) => (
-              <div key={i} style={{ width: i <= step ? 20 : 6, height: 6, borderRadius: 3, background: i <= step ? "#C8FF3D" : "#2a2a2a", transition: "all 0.3s" }} />
+              <div key={i} style={{ width: i <= step ? 18 : 6, height: 6, borderRadius: 3, background: i <= step ? T.blue : T.lightgray, transition: "all 0.3s" }} />
             ))}
           </div>
         </section>
       )}
 
       {/* Results */}
-      {hasResults && (
-        <section style={{ padding: "0 24px 60px", maxWidth: 860, margin: "0 auto" }} className="fu">
-          <p style={{ fontSize: 13, color: "#555", marginBottom: 28, textAlign: "center" }}>
-            Результаты для: <span style={{ color: "#fff", fontWeight: 700 }}>{techData?.url || url}</span>
+      {(tech || mkt) && (
+        <section style={{ position: "relative", zIndex: 1, padding: "0 24px 72px", maxWidth: 920, margin: "0 auto" }} className="fu">
+
+          <p style={{ fontSize: 12, color: T.gray, marginBottom: 24, textAlign: "center" }}>
+            Результаты для: <span style={{ color: T.black, fontWeight: 700 }}>{tech?.url || url}</span>
           </p>
 
           {/* Overall */}
-          {techData && (
-            <div style={{ background: "#161616", border: "1px solid #2a2a2a", borderRadius: 20, padding: "24px 28px", marginBottom: 24, display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+          {tech && (
+            <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 20, padding: "22px 26px", marginBottom: 28, display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap", boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                <CircleScore score={techData.overall} size={80} />
-                <span style={{ fontSize: 10, color: "#666", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Технический</span>
+                <ScoreRing score={tech.overall} size={72} />
+                <span style={{ fontSize: 10, color: T.gray, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Технический</span>
               </div>
-              {mktData?.overall_marketing_score !== undefined && (
+              {mkt?.overall_marketing_score !== undefined && (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <CircleScore score={mktData.overall_marketing_score} size={80} />
-                  <span style={{ fontSize: 10, color: "#666", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Маркетинг</span>
+                  <ScoreRing score={mkt.overall_marketing_score} size={72} />
+                  <span style={{ fontSize: 10, color: T.gray, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Маркетинг</span>
                 </div>
               )}
               <div style={{ flex: 1, minWidth: 200 }}>
-                <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 10, letterSpacing: "-0.03em" }}>
-                  {techData.overall >= 80 ? "Сайт в хорошей форме" : techData.overall >= 50 ? "Есть над чем поработать" : "Сайт теряет клиентов"}
+                <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 17, fontWeight: 800, marginBottom: 10, letterSpacing: "-0.02em", color: T.black }}>
+                  {tech.overall >= 80 ? "Сайт в хорошей форме" : tech.overall >= 50 ? "Есть над чем поработать" : "Сайт теряет клиентов"}
                 </h2>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {[
-                    { label: "Скорость моб", s: techData.perf },
-                    { label: "Скорость десктоп", s: techData.deskPerf },
-                    { label: "SEO", s: techData.seo },
-                    { label: "Доступность", s: techData.acc },
-                  ].map(({ label, s }) => (
-                    <div key={label} style={{ background: "#1e1e1e", borderRadius: 8, padding: "6px 12px", display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 15, fontWeight: 800, color: scoreColor(s) }}>{s}</span>
-                      <span style={{ fontSize: 11, color: "#666" }}>{label}</span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                  {[{ label: "Скорость моб", s: tech.perf }, { label: "Скорость десктоп", s: tech.deskPerf }, { label: "SEO", s: tech.seo }, { label: "Доступность", s: tech.acc }].map(({ label, s }) => (
+                    <div key={label} style={{ background: scoreBg(s), border: `1px solid ${scoreColor(s)}22`, borderRadius: 8, padding: "4px 10px", display: "flex", alignItems: "center", gap: 5 }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(s) }}>{s}</span>
+                      <span style={{ fontSize: 11, color: T.gray }}>{label}</span>
                     </div>
                   ))}
                 </div>
@@ -401,170 +400,132 @@ if (aiRes.ok) setMktData(aiJson);
             </div>
           )}
 
-          {/* ─── 01 МАРКЕТИНГ ─── */}
-          <div style={{ marginBottom: 32 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ background: "#1B63FF", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 800 }}>01</span>
-              <h2 style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.03em" }}>Маркетинговый анализ</h2>
-              {mktData?.overall_marketing_score !== undefined && (
-                <span style={{ fontSize: 14, color: "#888" }}>
-                  — <span style={{ color: scoreColor(mktData.overall_marketing_score), fontWeight: 800 }}>{mktData.overall_marketing_score}</span>/100
-                </span>
+          {/* Section helper */}
+          {[
+            { num: "01", title: "Маркетинговый анализ", score: mkt?.overall_marketing_score, content: "mkt" },
+            { num: "02", title: "SEO-аудит", score: tech?.seo, content: "seo" },
+            { num: "03", title: "GEO / AI-поиск", content: "geo", subtitle: "Perplexity, ChatGPT, Яндекс AI" },
+            { num: "04", title: "Технические метрики", content: "tech" },
+          ].map(({ num, title, score, subtitle, content }) => (
+            <div key={num} style={{ marginBottom: 32 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                <span style={{ background: T.blue, color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 800 }}>{num}</span>
+                <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: T.black }}>{title}</h2>
+                {score !== undefined && <span style={{ fontSize: 13, color: T.gray }}>— <span style={{ color: scoreColor(score), fontWeight: 800 }}>{score}</span>/100</span>}
+                {subtitle && <span style={{ fontSize: 11, color: T.gray, fontStyle: "italic" }}>{subtitle}</span>}
+              </div>
+
+              {content === "mkt" && (
+                <>
+                  {mktLoading && !mkt && (
+                    <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 14, padding: "28px", textAlign: "center" }}>
+                      <div style={{ width: 28, height: 28, border: `3px solid ${T.lightgray}`, borderTop: `3px solid ${T.blue}`, borderRadius: "50%", margin: "0 auto 14px", animation: "spin 0.8s linear infinite" }} />
+                      <p style={{ fontSize: 13, fontWeight: 700, color: T.black }}>AI анализирует маркетинг...</p>
+                    </div>
+                  )}
+                  {sections.length > 0 && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 10 }}>
+                      {sections.map((s, i) => <AccordionCard key={s.title} icon={icons[i]} {...s} delay={i * 60} />)}
+                    </div>
+                  )}
+                  {mkt?.quick_wins?.length > 0 && (
+                    <div style={{ background: "#F1F8F1", border: "1px solid #C8E6C9", borderRadius: 12, padding: "14px 18px", marginTop: 10 }}>
+                      <p style={{ fontSize: 11, fontWeight: 800, color: T.green, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>⚡ Быстрые улучшения</p>
+                      {mkt.quick_wins.map((w, i) => <div key={i} style={{ display: "flex", gap: 8, marginBottom: 5 }}><span style={{ color: T.green, fontWeight: 800 }}>→</span><span style={{ fontSize: 13, color: "#1B5E20", lineHeight: 1.5 }}>{w}</span></div>)}
+                    </div>
+                  )}
+                  {mkt?.top_problems?.length > 0 && (
+                    <div style={{ background: "#FFF5F5", border: "1px solid #FFCDD2", borderRadius: 12, padding: "14px 18px", marginTop: 8 }}>
+                      <p style={{ fontSize: 11, fontWeight: 800, color: T.red, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>🔥 Главные проблемы</p>
+                      {mkt.top_problems.map((p, i) => (
+                        <div key={i} style={{ display: "flex", gap: 10, marginBottom: 7 }}>
+                          <span style={{ minWidth: 20, height: 20, borderRadius: "50%", background: "#FFEBEE", color: T.red, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
+                          <p style={{ fontSize: 13, color: "#B71C1C", lineHeight: 1.5, margin: 0 }}>{p}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {content === "seo" && tech && (
+                <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 6px rgba(0,0,0,0.03)" }}>
+                  {tech.seoItems.map((item, i) => <CheckItem key={i} {...item} />)}
+                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
+                    <a href={TELEGRAM_URL} className="btn-blue" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.blue, color: "#fff", borderRadius: 10, padding: "9px 15px", fontSize: 13, fontWeight: 700, boxShadow: "0 3px 12px rgba(27,99,255,0.2)" }}>
+                      🔧 Обсудить SEO с маркетологом →
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {content === "geo" && tech && (
+                <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 6px rgba(0,0,0,0.03)" }}>
+                  <div style={{ background: "#F8F5EF", borderRadius: 10, padding: "10px 13px", marginBottom: 12 }}>
+                    <p style={{ fontSize: 12, color: T.gray, lineHeight: 1.5, margin: 0 }}>GEO — оптимизация для AI-поисковиков. Структурированные данные помогают ChatGPT и Perplexity правильно понять ваш сайт.</p>
+                  </div>
+                  {tech.geoItems.map((item, i) => <CheckItem key={i} {...item} />)}
+                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
+                    <a href={TELEGRAM_URL} className="btn-blue" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.blue, color: "#fff", borderRadius: 10, padding: "9px 15px", fontSize: 13, fontWeight: 700, boxShadow: "0 3px 12px rgba(27,99,255,0.2)" }}>
+                      🤖 Обсудить GEO-оптимизацию →
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {content === "tech" && tech && (
+                <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 6px rgba(0,0,0,0.03)" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(108px, 1fr))", gap: 8, marginBottom: 14 }}>
+                    {[{ v: tech.fcp, d: "FCP — Первый контент" }, { v: tech.lcp, d: "LCP — Главный контент" }, { v: tech.si, d: "Speed Index" }, { v: tech.tbt, d: "TBT — Блокировка" }, { v: tech.cls, d: "CLS — Сдвиг макета" }].map(({ v, d }) => (
+                      <div key={d} style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px" }}>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: T.black, marginBottom: 2 }}>{v}</div>
+                        <div style={{ fontSize: 10, color: T.gray, fontWeight: 600, lineHeight: 1.3 }}>{d}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8, marginBottom: 12 }}>
+                    {[{ label: "Скорость мобильная", s: tech.perf }, { label: "Скорость десктоп", s: tech.deskPerf }, { label: "Доступность", s: tech.acc }, { label: "Best Practices", s: tech.bp }].map(({ label, s }) => (
+                      <div key={label} style={{ background: scoreBg(s), border: `1px solid ${scoreColor(s)}22`, borderRadius: 10, padding: "10px 13px", display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", border: `2px solid ${scoreColor(s)}`, background: T.white, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <span style={{ fontSize: 11, fontWeight: 900, color: scoreColor(s) }}>{s}</span>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 10, color: T.gray, fontWeight: 600 }}>{label}</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: scoreColor(s) }}>{scoreLabel(s)}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <a href={TELEGRAM_URL} className="btn-blue" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.blue, color: "#fff", borderRadius: 10, padding: "9px 15px", fontSize: 13, fontWeight: 700, boxShadow: "0 3px 12px rgba(27,99,255,0.2)" }}>
+                    ⚡ Обсудить оптимизацию скорости →
+                  </a>
+                </div>
               )}
             </div>
-
-            {mktLoading && !mktData && (
-              <div style={{ background: "#161616", border: "1px solid #2a2a2a", borderRadius: 20, padding: "32px", textAlign: "center" }}>
-                <div style={{ width: 32, height: 32, border: "3px solid #222", borderTop: "3px solid #1B63FF", borderRadius: "50%", margin: "0 auto 16px", animation: "spin 0.8s linear infinite" }} />
-                <p style={{ fontSize: 14, fontWeight: 700 }}>AI анализирует маркетинг...</p>
-              </div>
-            )}
-
-            {mktData?.sections && Object.values(mktData.sections).map((s, i) => (
-              <SectionCard key={s.title}
-                icon={["🎯","💡","👆","🤝","📋","📱"][i]}
-                title={s.title} score={s.score} verdict={s.verdict}
-                issues={s.issues} positives={s.positives}
-                recommendation={s.recommendation} fix_tip={s.fix_tip}
-                accent={i === 0}
-              />
-            ))}
-
-            {mktData?.quick_wins?.length > 0 && (
-              <div style={{ background: "#0f1a0f", border: "1px solid #1f3f1f", borderRadius: 16, padding: "16px 20px", marginTop: 4 }}>
-                <p style={{ fontSize: 12, fontWeight: 800, color: "#C8FF3D", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>⚡ Быстрые улучшения</p>
-                {mktData.quick_wins.map((w, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                    <span style={{ color: "#C8FF3D", fontWeight: 800 }}>→</span>
-                    <span style={{ fontSize: 13, color: "#ccffcc", lineHeight: 1.5 }}>{w}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* ─── 02 SEO ─── */}
-          {techData && (
-            <div style={{ marginBottom: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ background: "#1B63FF", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 800 }}>02</span>
-                <h2 style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.03em" }}>SEO-аудит</h2>
-                <span style={{ fontSize: 14, color: "#888" }}>— <span style={{ color: scoreColor(techData.seo), fontWeight: 800 }}>{techData.seo}</span>/100</span>
-              </div>
-              <div style={{ background: "#161616", border: "1px solid #2a2a2a", borderRadius: 20, padding: "20px 24px" }}>
-                {techData.seoItems.map((item, i) => <CheckItem key={i} {...item} />)}
-                <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #2a2a2a" }}>
-                  <a href={TELEGRAM_URL} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#1B63FF", color: "#fff", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-                    🔧 Обсудить SEO с маркетологом →
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─── 03 GEO / AI-поиск ─── */}
-          {techData && (
-            <div style={{ marginBottom: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ background: "#1B63FF", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 800 }}>03</span>
-                <h2 style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.03em" }}>GEO / AI-поиск</h2>
-                <span style={{ fontSize: 12, color: "#666", fontStyle: "italic" }}>Видимость в Perplexity, ChatGPT, Яндекс AI</span>
-              </div>
-              <div style={{ background: "#161616", border: "1px solid #2a2a2a", borderRadius: 20, padding: "20px 24px" }}>
-                <p style={{ fontSize: 13, color: "#888", marginBottom: 16, lineHeight: 1.5 }}>
-                  GEO (Generative Engine Optimization) — оптимизация для AI-поисковиков. Чем лучше структурированы данные, тем чаще ваш сайт попадает в ответы ChatGPT и Perplexity.
-                </p>
-                {techData.geoItems.map((item, i) => <CheckItem key={i} {...item} />)}
-                <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #2a2a2a" }}>
-                  <a href={TELEGRAM_URL} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#1B63FF", color: "#fff", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-                    🤖 Обсудить GEO-оптимизацию →
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─── 04 ТЕХНИЧЕСКИЕ ─── */}
-          {techData && (
-            <div style={{ marginBottom: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ background: "#1B63FF", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 800 }}>04</span>
-                <h2 style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.03em" }}>Технические метрики</h2>
-              </div>
-              <div style={{ background: "#161616", border: "1px solid #2a2a2a", borderRadius: 20, padding: "20px 24px" }}>
-                <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Core Web Vitals — метрики скорости которые Google использует для ранжирования:</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 20 }}>
-                  {[
-                    { label: "FCP", value: techData.fcp, desc: "Первый контент", good: true },
-                    { label: "LCP", value: techData.lcp, desc: "Главный контент", good: true },
-                    { label: "Speed Index", value: techData.si, desc: "Индекс скорости", good: true },
-                    { label: "TBT", value: techData.tbt, desc: "Блокировка", good: false },
-                    { label: "CLS", value: techData.cls, desc: "Сдвиг макета", good: false },
-                  ].map(({ label, value, desc }) => (
-                    <div key={label} style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 14px" }}>
-                      <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>{value}</div>
-                      <div style={{ fontSize: 10, color: "#666", fontWeight: 600 }}>{desc}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 16 }}>
-                  {[
-                    { label: "Скорость мобильная", score: techData.perf },
-                    { label: "Скорость десктоп", score: techData.deskPerf },
-                    { label: "Доступность", score: techData.acc },
-                    { label: "Best Practices", score: techData.bp },
-                  ].map(({ label, score }) => (
-                    <div key={label} style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-                      <CircleScore score={score} size={44} />
-                      <div>
-                        <div style={{ fontSize: 11, color: "#888", fontWeight: 600 }}>{label}</div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: scoreColor(score) }}>{scoreLabel(score)}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <a href={TELEGRAM_URL} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#1B63FF", color: "#fff", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-                  ⚡ Обсудить оптимизацию скорости →
-                </a>
-              </div>
-            </div>
-          )}
-
-          {/* Top problems */}
-          {mktData?.top_problems?.length > 0 && (
-            <div style={{ background: "#1a0f0f", border: "1px solid #3a1f1f", borderRadius: 20, padding: "24px 28px", marginBottom: 20 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 800, marginBottom: 16, color: "#FF3D3D", textTransform: "uppercase", letterSpacing: "0.08em" }}>🔥 Главные проблемы</h3>
-              {mktData.top_problems.map((p, i) => (
-                <div key={i} style={{ display: "flex", gap: 12, marginBottom: 10 }}>
-                  <span style={{ minWidth: 22, height: 22, borderRadius: "50%", background: "#FF3D3D22", color: "#FF3D3D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
-                  <p style={{ fontSize: 14, lineHeight: 1.5, color: "#ffcccc" }}>{p}</p>
-                </div>
-              ))}
-            </div>
-          )}
+          ))}
 
           {/* Final CTA */}
-          <div style={{ background: "#1B63FF", borderRadius: 20, padding: "32px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
+          <div style={{ background: `linear-gradient(135deg, ${T.blue} 0%, #1045CC 100%)`, borderRadius: 20, padding: "30px 26px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, boxShadow: "0 16px 48px rgba(27,99,255,0.3)" }}>
             <div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, letterSpacing: "-0.03em" }}>Хотите чтобы это починили?</h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, maxWidth: 400 }}>
+              <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 19, fontWeight: 800, marginBottom: 8, letterSpacing: "-0.02em", color: "#fff" }}>Хотите чтобы это починили?</h3>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, maxWidth: 380, margin: 0 }}>
                 Разберу проблемы вручную и покажу конкретный план: что исправить, в каком порядке и как это повлияет на заявки.
               </p>
             </div>
-            <a href={TELEGRAM_URL} style={{ background: "#C8FF3D", color: "#111", borderRadius: 12, padding: "14px 24px", fontSize: 15, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>
+            <a href={TELEGRAM_URL} className="btn-lime" style={{ background: T.lime, color: T.black, borderRadius: 12, padding: "13px 22px", fontSize: 14, fontWeight: 800, boxShadow: "0 6px 20px rgba(200,255,61,0.35)" }}>
               Маркетинг-разбор за 3 500 ₽ →
             </a>
           </div>
 
-          <div style={{ textAlign: "center", marginTop: 20 }}>
-            <button onClick={() => { setTechData(null); setMktData(null); setUrl(""); }} style={{ background: "none", border: "1px solid #2a2a2a", color: "#666", borderRadius: 10, padding: "8px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+          <div style={{ textAlign: "center", marginTop: 18 }}>
+            <button onClick={() => { setTech(null); setMkt(null); setUrl(""); }} style={{ background: "none", border: `1px solid ${T.border}`, color: T.gray, borderRadius: 10, padding: "8px 18px", fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", transition: "all 0.2s" }}>
               Проверить другой сайт
             </button>
           </div>
         </section>
       )}
 
-      <footer style={{ borderTop: "1px solid #1a1a1a", padding: "20px 24px", textAlign: "center", fontSize: 12, color: "#333" }}>
+      <footer style={{ position: "relative", zIndex: 1, borderTop: `1px solid ${T.border}`, padding: "18px 24px", textAlign: "center", fontSize: 12, color: T.gray, background: "rgba(240,237,230,0.6)" }}>
         kirillova.online · Ксения Кириллова — маркетолог, 15 лет в профессии
       </footer>
     </div>
