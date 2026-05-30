@@ -475,23 +475,25 @@ export default function App() {
                       )}
                     </>
                   )}
-                  {mkt?.quick_wins?.length > 0 && (
-                    <div style={{ background: "#F1F8F1", border: "1px solid #C8E6C9", borderRadius: 12, padding: "14px 18px", marginTop: 10 }}>
-                      <p style={{ fontSize: 11, fontWeight: 800, color: T.green, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>⚡ Быстрые улучшения</p>
-                      {mkt.quick_wins.slice(0, 2).map((w, i) => <div key={i} style={{ display: "flex", gap: 8, marginBottom: 5 }}><span style={{ color: T.green, fontWeight: 800 }}>→</span><span style={{ fontSize: 13, color: "#1B5E20", lineHeight: 1.5 }}>{w}</span></div>)}
-                      <p style={{ fontSize: 11, color: T.gray, marginTop: 6, fontStyle: "italic" }}>+ ещё улучшения — в полном разборе</p>
-                    </div>
-                  )}
-                  {mkt?.top_problems?.length > 0 && (
-                    <div style={{ background: "#FFF5F5", border: "1px solid #FFCDD2", borderRadius: 12, padding: "14px 18px", marginTop: 8 }}>
-                      <p style={{ fontSize: 11, fontWeight: 800, color: T.red, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>🔥 Главные проблемы</p>
-                      {mkt.top_problems.slice(0, 2).map((p, i) => (
-                        <div key={i} style={{ display: "flex", gap: 10, marginBottom: 7 }}>
-                          <span style={{ minWidth: 20, height: 20, borderRadius: "50%", background: "#FFEBEE", color: T.red, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
-                          <p style={{ fontSize: 13, color: "#B71C1C", lineHeight: 1.5, margin: 0 }}>{p}</p>
+                  {(mkt?.quick_wins?.length > 0 || mkt?.top_problems?.length > 0) && (
+                    <div style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 12, overflow: "hidden", marginTop: 10 }}>
+                      {/* Blurred preview */}
+                      <div style={{ filter: "blur(5px)", pointerEvents: "none", userSelect: "none", opacity: 0.5, padding: "14px 18px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 800, color: T.green, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>⚡ Быстрые улучшения</p>
+                        {(mkt.quick_wins || []).slice(0, 2).map((w, i) => <div key={i} style={{ display: "flex", gap: 8, marginBottom: 5 }}><span style={{ color: T.green, fontWeight: 800 }}>→</span><span style={{ fontSize: 13, color: "#1B5E20" }}>{w}</span></div>)}
+                        <p style={{ fontSize: 11, fontWeight: 800, color: T.red, textTransform: "uppercase", letterSpacing: "0.08em", margin: "10px 0 8px" }}>🔥 Главные проблемы</p>
+                        {(mkt.top_problems || []).slice(0, 2).map((p, i) => <div key={i} style={{ display: "flex", gap: 8, marginBottom: 5 }}><span style={{ color: T.red, fontWeight: 800 }}>{i+1}.</span><span style={{ fontSize: 13, color: "#B71C1C" }}>{p}</span></div>)}
+                      </div>
+                      {/* Lock panel */}
+                      <div style={{ background: "rgba(240,237,230,0.95)", borderTop: "1px solid rgba(0,0,0,0.06)", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 800, color: "#111", margin: "0 0 3px" }}>🔒 Выводы и план действий</p>
+                          <p style={{ fontSize: 12, color: T.gray, margin: 0 }}>Быстрые улучшения и главные проблемы — в полном разборе</p>
                         </div>
-                      ))}
-                      <p style={{ fontSize: 11, color: T.gray, marginTop: 6, fontStyle: "italic" }}>+ ещё проблемы — в полном разборе</p>
+                        <a href="https://t.me/ksukirillova" style={{ background: "#1B63FF", color: "#fff", borderRadius: 10, padding: "9px 16px", fontSize: 12, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>
+                          Получить разбор →
+                        </a>
+                      </div>
                     </div>
                   )}
                 </>
