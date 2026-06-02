@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
 
 const PAGESPEED_API_KEY = import.meta.env.VITE_PAGESPEED_API_KEY || "";
-
 const TELEGRAM_URL = "https://t.me/ksukirillova";
-const CHANNEL_URL = "https://t.me/prosto_marketingg";
-const CHECKLIST_BOT_URL = "https://t.me/prosto_marketing_ai_bot?start=checklist";
-const MAIN_SITE_URL = "https://kirillova.online";
-const AUDIT_SITE_URL = "https://audit.kirillova.online/";
 
 const T = {
   bg: "#F0EDE6",
@@ -40,7 +35,7 @@ function AnimatedNumber({ target }) {
 
   useEffect(() => {
     let v = 0;
-    const step = Math.max(target / 60, 1);
+    const step = target / 60;
 
     const t = setInterval(() => {
       v = Math.min(v + step, target);
@@ -61,8 +56,7 @@ function ScoreRing({ score, size = 72 }) {
   const [dash, setDash] = useState(0);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setDash((score / 100) * circ), 200);
-    return () => clearTimeout(timeout);
+    setTimeout(() => setDash((score / 100) * circ), 200);
   }, [score, circ]);
 
   return (
@@ -89,7 +83,9 @@ function ScoreRing({ score, size = 72 }) {
           strokeWidth={4}
           strokeDasharray={`${dash} ${circ}`}
           strokeLinecap="round"
-          style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)" }}
+          style={{
+            transition: "stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)",
+          }}
         />
       </svg>
 
@@ -166,8 +162,7 @@ function AccordionCard({
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(timeout);
+    setTimeout(() => setVisible(true), delay);
   }, [delay]);
 
   return (
@@ -179,7 +174,8 @@ function AccordionCard({
         overflow: "hidden",
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(12px)",
-        transition: "opacity 0.4s ease, transform 0.4s ease, border-color 0.2s, box-shadow 0.2s",
+        transition:
+          "opacity 0.4s ease, transform 0.4s ease, border-color 0.2s, box-shadow 0.2s",
         boxShadow: open
           ? "0 8px 32px rgba(27,99,255,0.1)"
           : hovered
@@ -207,8 +203,17 @@ function AccordionCard({
         <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: T.black }}>{title}</span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 3,
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 800, color: T.black }}>
+              {title}
+            </span>
             <span
               style={{
                 background: scoreBg(score),
@@ -237,7 +242,14 @@ function AccordionCard({
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexShrink: 0,
+          }}
+        >
           <div
             style={{
               width: 38,
@@ -383,8 +395,6 @@ function AccordionCard({
 
           <a
             href={TELEGRAM_URL}
-            target="_blank"
-            rel="noreferrer"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -455,8 +465,6 @@ function CheckItem({ label, ok, tip }) {
         {ok && (
           <a
             href={TELEGRAM_URL}
-            target="_blank"
-            rel="noreferrer"
             style={{
               background: "none",
               border: `1px solid ${T.lightgray}`,
@@ -492,97 +500,16 @@ function CheckItem({ label, ok, tip }) {
   );
 }
 
-function CTAPath({ href, icon, title, text, action, variant = "light" }) {
-  const isBlue = variant === "blue";
-  const isGreen = variant === "green";
-
-  const baseBg = isBlue
-    ? `linear-gradient(135deg, ${T.blue} 0%, #1045CC 100%)`
-    : isGreen
-    ? "#F0FAF0"
-    : "#F8F5EF";
-
-  const baseBorder = isBlue ? "none" : isGreen ? "1px solid #C8E6C9" : `1px solid ${T.border}`;
-
-  const actionColor = isBlue ? T.lime : isGreen ? T.green : T.blue;
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      style={{
-        background: baseBg,
-        border: baseBorder,
-        borderRadius: 16,
-        padding: "20px",
-        textDecoration: "none",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-        boxShadow: isBlue ? "0 8px 24px rgba(27,99,255,0.25)" : "none",
-        transition: "all 0.2s",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-2px)";
-        e.currentTarget.style.borderColor = isGreen ? T.green : T.blue;
-        if (isBlue) e.currentTarget.style.boxShadow = "0 12px 30px rgba(27,99,255,0.32)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "none";
-        e.currentTarget.style.borderColor = isGreen ? "#C8E6C9" : T.border;
-        if (isBlue) e.currentTarget.style.boxShadow = "0 8px 24px rgba(27,99,255,0.25)";
-      }}
-    >
-      <span style={{ fontSize: 30 }}>{icon}</span>
-
-      <p
-        style={{
-          fontSize: 15,
-          fontWeight: 900,
-          color: isBlue ? "#fff" : T.black,
-          margin: 0,
-        }}
-      >
-        {title}
-      </p>
-
-      <p
-        style={{
-          fontSize: 12,
-          color: isBlue ? "rgba(255,255,255,0.76)" : T.gray,
-          margin: 0,
-          lineHeight: 1.5,
-        }}
-      >
-        {text}
-      </p>
-
-      <span
-        style={{
-          fontSize: isBlue ? 13 : 12,
-          fontWeight: 900,
-          color: actionColor,
-          marginTop: 4,
-        }}
-      >
-        {action}
-      </span>
-    </a>
-  );
-}
-
 async function fetchPageSpeed(url, strategy = "mobile") {
-  if (!PAGESPEED_API_KEY) {
-    throw new Error("No PageSpeed API key");
-  }
-
   const base = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
   const cats = ["performance", "seo", "accessibility", "best-practices"];
   const catParams = cats.map((c) => `category=${c}`).join("&");
-  const endpoint = `${base}?url=${encodeURIComponent(url)}&strategy=${strategy}&key=${PAGESPEED_API_KEY}&${catParams}`;
+  const endpoint = `${base}?url=${encodeURIComponent(
+    url
+  )}&strategy=${strategy}&key=${PAGESPEED_API_KEY}&${catParams}`;
 
   const res = await fetch(endpoint);
+
   if (!res.ok) throw new Error("PageSpeed error");
 
   return res.json();
@@ -616,12 +543,12 @@ function parseTech(mob, desk) {
       {
         label: "Title страницы",
         ok: a["document-title"]?.score !== 0 && a["document-title"]?.score != null,
-        tip: "Добавьте <title> в <head> — 50–60 символов.",
+        tip: "Добавьте <title> в <head> — 50-60 символов.",
       },
       {
         label: "Мета-описание",
         ok: a["meta-description"]?.score !== 0 && a["meta-description"]?.score != null,
-        tip: "Добавьте <meta name='description' content='...'> — 150–160 символов.",
+        tip: "Добавьте <meta name='description' content='...'> — 150-160 символов.",
       },
       {
         label: "Canonical URL",
@@ -641,17 +568,17 @@ function parseTech(mob, desk) {
       {
         label: "Тексты ссылок",
         ok: a["link-text"]?.score !== 0 && a["link-text"]?.score != null,
-        tip: "Замените «нажмите здесь» на конкретные описания.",
+        tip: "Замените 'нажмите здесь' на конкретные описания.",
       },
       {
         label: "HTTPS",
         ok: a["is-on-https"]?.score !== 0 && a["is-on-https"]?.score != null,
-        tip: "Подключите SSL-сертификат. Часто это бесплатно через хостинг или Let's Encrypt.",
+        tip: "SSL-сертификат — бесплатно через Let's Encrypt.",
       },
       {
         label: "HTTP → HTTPS редирект",
         ok: a["redirects-http"]?.score !== 0 && a["redirects-http"]?.score != null,
-        tip: "Настройте 301-редирект с HTTP на HTTPS.",
+        tip: "301-редирект в .htaccess или настройках сервера.",
       },
       {
         label: "Viewport мобильных",
@@ -661,34 +588,34 @@ function parseTech(mob, desk) {
       {
         label: "Размер кнопок на мобильном",
         ok: a["tap-targets"]?.score !== 0 && a["tap-targets"]?.score != null,
-        tip: "Кнопки и ссылки должны быть достаточно крупными для нажатия на телефоне.",
+        tip: "Кнопки минимум 48×48px.",
       },
     ],
     geoItems: [
       {
         label: "Open Graph теги",
         ok: false,
-        tip: "Добавьте og:title, og:description, og:image для красивого превью в соцсетях.",
+        tip: "og:title, og:description, og:image для превью в соцсетях.",
       },
       {
         label: "Schema.org разметка",
         ok: false,
-        tip: "Добавьте JSON-LD: Organization, LocalBusiness, Product или Service.",
+        tip: "JSON-LD: Organization или LocalBusiness в <head>.",
       },
       {
         label: "Hreflang",
         ok: a["hreflang"]?.score !== 0 && a["hreflang"]?.score != null,
-        tip: "Для мультиязычных сайтов добавьте <link rel='alternate' hreflang='ru'>.",
+        tip: "Для мультиязычных: <link rel='alternate' hreflang='ru'>.",
       },
       {
         label: "Sitemap.xml",
         ok: false,
-        tip: "Создайте sitemap.xml и добавьте его в Google Search Console / Яндекс Вебмастер.",
+        tip: "Создайте и зарегистрируйте в Google Search Console.",
       },
       {
         label: "Структурированные данные",
         ok: false,
-        tip: "JSON-LD помогает AI-поисковикам и поисковым системам лучше понимать страницу.",
+        tip: "JSON-LD с данными о бизнесе помогает AI-поисковикам.",
       },
     ],
   };
@@ -717,6 +644,7 @@ export default function App() {
     if (!url.trim()) return;
 
     let u = url.trim();
+
     if (!u.startsWith("http")) u = "https://" + u;
 
     setLoading(true);
@@ -744,24 +672,25 @@ export default function App() {
       try {
         const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`);
         html = (await r.json()).contents || "";
-      } catch {
-        html = "";
-      }
+      } catch {}
 
       const ai = await fetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ html, url: u }),
       });
 
       if (ai.ok) {
         const aiData = await ai.json();
+
         if (aiData.seoData) setSeoOverride(aiData.seoData);
+
         setMkt(aiData);
       }
-    } catch (e) {
-      console.error(e);
-      setError("Не удалось проанализировать. Проверьте URL или попробуйте другой сайт.");
+    } catch {
+      setError("Не удалось проанализировать. Проверьте URL.");
     } finally {
       clearInterval(iv);
       setLoading(false);
@@ -825,6 +754,17 @@ export default function App() {
           }
         }
 
+        @keyframes waveIn {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
         .fu {
           animation: fadeUp 0.5s cubic-bezier(0.4,0,0.2,1) both;
         }
@@ -853,16 +793,6 @@ export default function App() {
         .btn-blue:hover {
           transform: translateY(-1px) !important;
           box-shadow: 0 6px 20px rgba(27,99,255,0.3) !important;
-        }
-
-        @media (max-width: 640px) {
-          .url-form {
-            flex-direction: column;
-          }
-
-          .url-form button {
-            width: 100%;
-          }
         }
       `}</style>
 
@@ -913,7 +843,10 @@ export default function App() {
           justifyContent: "space-between",
         }}
       >
-        <a href={MAIN_SITE_URL} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <a
+          href="https://kirillova.online"
+          style={{ display: "flex", alignItems: "center", gap: 10 }}
+        >
           <span
             style={{
               width: 32,
@@ -930,7 +863,6 @@ export default function App() {
           >
             К
           </span>
-
           <span style={{ fontSize: 14, fontWeight: 700, color: T.black }}>
             kirillova.online
           </span>
@@ -938,8 +870,6 @@ export default function App() {
 
         <a
           href={TELEGRAM_URL}
-          target="_blank"
-          rel="noreferrer"
           className="btn-blue"
           style={{
             background: T.blue,
@@ -960,7 +890,7 @@ export default function App() {
           position: "relative",
           zIndex: 1,
           padding: "64px 24px 48px",
-          maxWidth: 720,
+          maxWidth: 680,
           margin: "0 auto",
           textAlign: "center",
         }}
@@ -994,14 +924,14 @@ export default function App() {
               animation: "pulse 2s infinite",
             }}
           />
-          Бесплатная AI-прожарка сайта
+          Бесплатный AI-аудит сайта
         </div>
 
         <h1
           className="fu1"
           style={{
             fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: "clamp(32px, 6vw, 58px)",
+            fontSize: "clamp(32px, 6vw, 56px)",
             fontWeight: 900,
             lineHeight: 1.03,
             letterSpacing: "-0.04em",
@@ -1009,14 +939,14 @@ export default function App() {
             color: T.black,
           }}
         >
-          Где ваш сайт
+          Прожарим ваш сайт
         </h1>
 
         <h1
           className="fu1"
           style={{
             fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: "clamp(32px, 6vw, 58px)",
+            fontSize: "clamp(32px, 6vw, 56px)",
             fontWeight: 900,
             lineHeight: 1.03,
             letterSpacing: "-0.04em",
@@ -1026,7 +956,7 @@ export default function App() {
             WebkitTextFillColor: "transparent",
           }}
         >
-          теряет заявки?
+          за 30 секунд
         </h1>
 
         <p
@@ -1036,16 +966,16 @@ export default function App() {
             color: T.gray,
             lineHeight: 1.7,
             marginBottom: 36,
-            maxWidth: 500,
+            maxWidth: 440,
             margin: "0 auto 36px",
           }}
         >
-          Вставьте ссылку — AI-аудит покажет первые точки потерь:
-          оффер, доверие, SEO, скорость, структуру и путь заявки.
+          Маркетинг, SEO, GEO и технический аудит —<br />
+          узнайте где вы теряете клиентов
         </p>
 
         <div
-          className="fu2 url-form"
+          className="fu2"
           style={{
             display: "flex",
             gap: 8,
@@ -1103,30 +1033,6 @@ export default function App() {
           </button>
         </div>
 
-        <div
-          className="fu2"
-          style={{
-            marginTop: 16,
-            display: "flex",
-            justifyContent: "center",
-            gap: 10,
-            flexWrap: "wrap",
-          }}
-        >
-          <a
-            href={CHECKLIST_BOT_URL}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              color: T.blue,
-              fontSize: 13,
-              fontWeight: 800,
-            }}
-          >
-            Забрать чек-лист «20 точек потери клиентов» →
-          </a>
-        </div>
-
         {error && <p style={{ marginTop: 14, color: T.red, fontSize: 13 }}>{error}</p>}
       </section>
 
@@ -1152,11 +1058,9 @@ export default function App() {
               animation: "spin 0.8s linear infinite",
             }}
           />
-
           <p style={{ fontSize: 15, fontWeight: 700, color: T.black, marginBottom: 5 }}>
             {steps[step]}
           </p>
-
           <p style={{ fontSize: 12, color: T.gray }}>Обычно 15–30 секунд</p>
 
           <div style={{ marginTop: 16, display: "flex", justifyContent: "center", gap: 5 }}>
@@ -1207,7 +1111,14 @@ export default function App() {
                 boxShadow: "0 2px 16px rgba(0,0,0,0.04)",
               }}
             >
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
                 <ScoreRing score={tech.overall} size={72} />
                 <span
                   style={{
@@ -1295,13 +1206,32 @@ export default function App() {
           )}
 
           {[
-            { num: "01", title: "Маркетинговый анализ", score: mkt?.overall_marketing_score, content: "mkt" },
-            { num: "02", title: "SEO-аудит", score: seoOverride?.seoScore ?? tech?.seo, content: "seo" },
-            { num: "03", title: "GEO / AI-поиск", content: "geo", subtitle: "Perplexity, ChatGPT, Яндекс AI" },
-            { num: "04", title: "Технические метрики", content: "tech" },
+            {
+              num: "01",
+              title: "Маркетинговый анализ",
+              score: mkt?.overall_marketing_score,
+              content: "mkt",
+            },
+            {
+              num: "02",
+              title: "SEO-аудит",
+              score: seoOverride?.seoScore ?? tech?.seo,
+              content: "seo",
+            },
+            {
+              num: "03",
+              title: "GEO / AI-поиск",
+              content: "geo",
+              subtitle: "Perplexity, ChatGPT, Яндекс AI",
+            },
+            {
+              num: "04",
+              title: "Технические метрики",
+              content: "tech",
+            },
           ].map(({ num, title, score, subtitle, content }) => (
             <div key={num} style={{ marginBottom: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                 <span
                   style={{
                     background: T.blue,
@@ -1375,7 +1305,7 @@ export default function App() {
                       <div
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
                           gap: 10,
                           alignItems: "start",
                         }}
@@ -1408,7 +1338,7 @@ export default function App() {
                             <div
                               style={{
                                 display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
                                 gap: 10,
                                 padding: 10,
                               }}
@@ -1432,20 +1362,24 @@ export default function App() {
                             }}
                           >
                             <span style={{ fontSize: 28 }}>🔒</span>
-
                             <p style={{ fontSize: 15, fontWeight: 800, color: "#111", margin: 0 }}>
                               Полный маркетинговый анализ
                             </p>
-
-                            <p style={{ fontSize: 13, color: "#555", margin: 0, maxWidth: 360 }}>
-                              Ещё 4 блока: путь клиента, доверие, структура, мобильный UX.
+                            <p style={{ fontSize: 13, color: "#555", margin: 0, maxWidth: 320 }}>
+                              Ещё 4 блока: путь клиента, доверие, структура, мобильный UX
                             </p>
 
-                            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", marginTop: 4 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 10,
+                                flexWrap: "wrap",
+                                justifyContent: "center",
+                                marginTop: 4,
+                              }}
+                            >
                               <a
-                                href={TELEGRAM_URL}
-                                target="_blank"
-                                rel="noreferrer"
+                                href="https://t.me/ksukirillova"
                                 style={{
                                   background: "#1B63FF",
                                   color: "#fff",
@@ -1461,9 +1395,7 @@ export default function App() {
                               </a>
 
                               <a
-                                href={CHECKLIST_BOT_URL}
-                                target="_blank"
-                                rel="noreferrer"
+                                href="https://t.me/ksukirillova"
                                 style={{
                                   background: "#fff",
                                   color: "#1B63FF",
@@ -1475,7 +1407,7 @@ export default function App() {
                                   textDecoration: "none",
                                 }}
                               >
-                                Забрать чек-лист
+                                Купить полный разбор
                               </a>
                             </div>
                           </div>
@@ -1557,18 +1489,23 @@ export default function App() {
                         }}
                       >
                         <div>
-                          <p style={{ fontSize: 13, fontWeight: 800, color: "#111", margin: "0 0 3px" }}>
+                          <p
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 800,
+                              color: "#111",
+                              margin: "0 0 3px",
+                            }}
+                          >
                             🔒 Выводы и план действий
                           </p>
                           <p style={{ fontSize: 12, color: T.gray, margin: 0 }}>
-                            Быстрые улучшения и главные проблемы — в полном разборе.
+                            Быстрые улучшения и главные проблемы — в полном разборе
                           </p>
                         </div>
 
                         <a
-                          href={TELEGRAM_URL}
-                          target="_blank"
-                          rel="noreferrer"
+                          href="https://t.me/ksukirillova"
                           style={{
                             background: "#1B63FF",
                             color: "#fff",
@@ -1605,8 +1542,6 @@ export default function App() {
                   <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
                     <a
                       href={TELEGRAM_URL}
-                      target="_blank"
-                      rel="noreferrer"
                       className="btn-blue"
                       style={{
                         display: "inline-flex",
@@ -1647,7 +1582,7 @@ export default function App() {
                   >
                     <p style={{ fontSize: 12, color: T.gray, lineHeight: 1.5, margin: 0 }}>
                       GEO — оптимизация для AI-поисковиков. Структурированные данные помогают
-                      ChatGPT, Perplexity и AI-поиску правильно понять сайт.
+                      ChatGPT и Perplexity правильно понять ваш сайт.
                     </p>
                   </div>
 
@@ -1658,8 +1593,6 @@ export default function App() {
                   <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
                     <a
                       href={TELEGRAM_URL}
-                      target="_blank"
-                      rel="noreferrer"
                       className="btn-blue"
                       style={{
                         display: "inline-flex",
@@ -1717,7 +1650,14 @@ export default function App() {
                         <div style={{ fontSize: 15, fontWeight: 800, color: T.black, marginBottom: 2 }}>
                           {v}
                         </div>
-                        <div style={{ fontSize: 10, color: T.gray, fontWeight: 600, lineHeight: 1.3 }}>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            color: T.gray,
+                            fontWeight: 600,
+                            lineHeight: 1.3,
+                          }}
+                        >
                           {d}
                         </div>
                       </div>
@@ -1782,8 +1722,6 @@ export default function App() {
 
                   <a
                     href={TELEGRAM_URL}
-                    target="_blank"
-                    rel="noreferrer"
                     className="btn-blue"
                     style={{
                       display: "inline-flex",
@@ -1817,15 +1755,15 @@ export default function App() {
             <h3
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: 22,
-                fontWeight: 900,
-                marginBottom: 8,
-                letterSpacing: "-0.03em",
+                fontSize: 18,
+                fontWeight: 800,
+                marginBottom: 6,
+                letterSpacing: "-0.02em",
                 color: T.black,
                 textAlign: "center",
               }}
             >
-              Что делать дальше?
+              Что дальше?
             </h3>
 
             <p
@@ -1833,12 +1771,10 @@ export default function App() {
                 fontSize: 14,
                 color: T.gray,
                 textAlign: "center",
-                marginBottom: 22,
-                lineHeight: 1.6,
+                marginBottom: 20,
               }}
             >
-              AI-аудит показал первые точки потерь. Теперь можно выбрать следующий шаг:
-              сохранить чек-лист, остаться в канале или заказать человеческий разбор.
+              Выберите следующий шаг
             </p>
 
             <div
@@ -1848,48 +1784,119 @@ export default function App() {
                 gap: 12,
               }}
             >
-              <CTAPath
-                href={CHECKLIST_BOT_URL}
-                icon="📋"
-                title="Забрать чек-лист"
-                text="PDF «20 точек, где сайт теряет клиентов»: оффер, заявка, доверие, контент и AI-инструменты."
-                action="Получить в Telegram-боте →"
-                variant="green"
-              />
+              <a
+                href="https://t.me/prosto_marketingg"
+                style={{
+                  background: "#F8F5EF",
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 16,
+                  padding: "20px",
+                  textDecoration: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = T.blue)}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = T.border)}
+              >
+                <span style={{ fontSize: 28 }}>📢</span>
+                <p style={{ fontSize: 14, fontWeight: 800, color: T.black, margin: 0 }}>
+                  Подписаться на канал
+                </p>
+                <p style={{ fontSize: 12, color: T.gray, margin: 0, lineHeight: 1.5 }}>
+                  AI, маркетинг и автоматизация — без воды. Кейсы, инструменты, разборы.
+                </p>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: T.blue,
+                    marginTop: 4,
+                  }}
+                >
+                  t.me/prosto_marketingg →
+                </span>
+              </a>
 
-              <CTAPath
-                href={CHANNEL_URL}
-                icon="📢"
-                title="Подписаться на канал"
-                text="Маркетинг, сайты и AI без воды: разборы, ошибки сайтов, инструменты и примеры воронок."
-                action="Перейти в Prosto MARKETING →"
-              />
+              <a
+                href="https://t.me/prosto_marketingg"
+                style={{
+                  background: "#F0FAF0",
+                  border: "1px solid #C8E6C9",
+                  borderRadius: 16,
+                  padding: "20px",
+                  textDecoration: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = T.green)}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#C8E6C9")}
+              >
+                <span style={{ fontSize: 28 }}>📋</span>
+                <p style={{ fontSize: 14, fontWeight: 800, color: T.black, margin: 0 }}>
+                  Скачать чеклист
+                </p>
+                <p style={{ fontSize: 12, color: T.gray, margin: 0, lineHeight: 1.5 }}>
+                  20 точек где сайт теряет клиентов + AI-инструменты которые это чинят.
+                  Бесплатно.
+                </p>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: T.green,
+                    marginTop: 4,
+                  }}
+                >
+                  Получить чеклист →
+                </span>
+              </a>
 
-              <CTAPath
+              <a
                 href={TELEGRAM_URL}
-                icon="🔧"
-                title="Заказать человеческий разбор"
-                text="Я посмотрю сайт вручную и покажу, что мешает заявкам: оффер, структура, доверие, CTA или путь заявки."
-                action="Маркетинг-разбор от 3 500 ₽ →"
-                variant="blue"
-              />
-            </div>
-
-            <div
-              style={{
-                marginTop: 18,
-                background: "#EEF3FF",
-                border: "1px solid #C5D5FF",
-                borderRadius: 14,
-                padding: "14px 16px",
-                textAlign: "center",
-              }}
-            >
-              <p style={{ fontSize: 13, color: "#1A3A80", lineHeight: 1.55, margin: 0 }}>
-                Логика простая: <b>AI-аудит</b> показывает первые проблемы →{" "}
-                <b>чек-лист</b> помогает пройтись глубже → <b>разбор</b> показывает,
-                что чинить в первую очередь.
-              </p>
+                style={{
+                  background: `linear-gradient(135deg, ${T.blue} 0%, #1045CC 100%)`,
+                  borderRadius: 16,
+                  padding: "20px",
+                  textDecoration: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  boxShadow: "0 8px 24px rgba(27,99,255,0.25)",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+              >
+                <span style={{ fontSize: 28 }}>🔧</span>
+                <p style={{ fontSize: 14, fontWeight: 800, color: "#fff", margin: 0 }}>
+                  Маркетинг-разбор
+                </p>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: "rgba(255,255,255,0.75)",
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Разберу проблемы вручную и покажу конкретный план что и в каком порядке
+                  исправить.
+                </p>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: T.lime,
+                    marginTop: 4,
+                  }}
+                >
+                  от 3 500 ₽ →
+                </span>
+              </a>
             </div>
           </div>
 
@@ -1931,13 +1938,7 @@ export default function App() {
           background: "rgba(240,237,230,0.6)",
         }}
       >
-        <a href={MAIN_SITE_URL} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>
-          kirillova.online
-        </a>{" "}
-        · Ксения Кириллoва — маркетолог, 15 лет в профессии ·{" "}
-        <a href={CHANNEL_URL} target="_blank" rel="noreferrer" style={{ fontWeight: 700 }}>
-          Prosto MARKETING
-        </a>
+        kirillova.online · Ксения Кириллoва — маркетолог, 15 лет в профессии
       </footer>
     </div>
   );
