@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const PAGESPEED_API_KEY = import.meta.env.OpenAI || "";
+const PAGESPEED_API_KEY = import.meta.env.VITE_PAGESPEED_API_KEY || "";
 const TELEGRAM_URL = "https://t.me/ksukirillova";
 
 const T = {
