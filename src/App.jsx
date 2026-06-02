@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const PAGESPEED_API_KEY = "AIzaSyB8O9to0nJJJMznVgTXqvsohJH16wXY6Z8";
+const PAGESPEED_API_KEY = import.meta.env.VITE_PAGESPEED_API_KEY || "";
 const TELEGRAM_URL = "https://t.me/ksukirillova";
 
 const T = {
