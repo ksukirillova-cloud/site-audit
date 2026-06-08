@@ -1794,6 +1794,7 @@ export default function App() {
               Что дальше?
             </h3>
 
+<<<<<<< HEAD
             <p
               style={{
                 fontSize: 14,
@@ -1924,6 +1925,44 @@ export default function App() {
                 >
                   от 3 500 ₽ →
                 </span>
+=======
+          {/* Funnel — 3 paths */}
+          <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 20, padding: "28px 26px", boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
+            <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: "-0.02em", color: T.black, textAlign: "center" }}>
+              Что дальше?
+            </h3>
+            <p style={{ fontSize: 14, color: T.gray, textAlign: "center", marginBottom: 20 }}>Выберите следующий шаг</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+              {/* Path 1 — channel */}
+              <a href="https://t.me/prosto_marketingg" style={{ background: "#F8F5EF", border: `1px solid ${T.border}`, borderRadius: 16, padding: "20px", textDecoration: "none", display: "flex", flexDirection: "column", gap: 8, transition: "all 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = T.blue}
+                onMouseLeave={e => e.currentTarget.style.borderColor = T.border}
+              >
+                <span style={{ fontSize: 28 }}>📢</span>
+                <p style={{ fontSize: 14, fontWeight: 800, color: T.black, margin: 0 }}>Подписаться на канал</p>
+                <p style={{ fontSize: 12, color: T.gray, margin: 0, lineHeight: 1.5 }}>AI, маркетинг и автоматизация — без воды. Кейсы, инструменты, разборы.</p>
+                <span style={{ fontSize: 12, fontWeight: 700, color: T.blue, marginTop: 4 }}>t.me/prosto_marketingg →</span>
+              </a>
+              {/* Path 2 — checklist */}
+              <a href="https://t.me/prosto_marketingg" style={{ background: "#F0FAF0", border: "1px solid #C8E6C9", borderRadius: 16, padding: "20px", textDecoration: "none", display: "flex", flexDirection: "column", gap: 8, transition: "all 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = T.green}
+                onMouseLeave={e => e.currentTarget.style.borderColor = "#C8E6C9"}
+              >
+                <span style={{ fontSize: 28 }}>📋</span>
+                <p style={{ fontSize: 14, fontWeight: 800, color: T.black, margin: 0 }}>Скачать чеклист</p>
+                <p style={{ fontSize: 12, color: T.gray, margin: 0, lineHeight: 1.5 }}>20 точек где сайт теряет клиентов + AI-инструменты которые это чинят. Бесплатно.</p>
+                <span style={{ fontSize: 12, fontWeight: 700, color: T.green, marginTop: 4 }}>Получить чеклист →</span>
+              </a>
+              {/* Path 3 — paid review */}
+              <a href={TELEGRAM_URL} style={{ background: `linear-gradient(135deg, ${T.blue} 0%, #1045CC 100%)`, borderRadius: 16, padding: "20px", textDecoration: "none", display: "flex", flexDirection: "column", gap: 8, boxShadow: "0 8px 24px rgba(27,99,255,0.25)", transition: "all 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+                onMouseLeave={e => e.currentTarget.style.transform = "none"}
+              >
+                <span style={{ fontSize: 28 }}>🔧</span>
+                <p style={{ fontSize: 14, fontWeight: 800, color: "#fff", margin: 0 }}>Маркетинг-разбор</p>
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", margin: 0, lineHeight: 1.5 }}>Разберу проблемы вручную и покажу конкретный план что и в каком порядке исправить.</p>
+                <span style={{ fontSize: 13, fontWeight: 800, color: T.lime, marginTop: 4 }}>от 3 500 ₽ →</span>
+>>>>>>> 1d8bad028b0a3ca385d7f56a6b8c598f9b8d2bfb
               </a>
             </div>
           </div>
